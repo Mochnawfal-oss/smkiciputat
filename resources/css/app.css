@@ -1,0 +1,120 @@
+@import "tailwindcss";
+
+@import "./pages/home.css";
+
+:root {
+    font-family: "Instrument Sans", sans-serif;
+    color: #242923;
+    background: #fafaf7;
+    font-synthesis: none;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+
+    --green: #244c3a;
+    --green-dark: #193a2c;
+    --green-soft: #eaf0eb;
+    --ink: #242923;
+    --muted: #777d77;
+    --line: #e7e9e5;
+    --paper: #fafaf7;
+    --accent: #c5a46d;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 90px;
+}
+
+body {
+    margin: 0;
+    min-width: 320px;
+    color: var(--ink);
+    background: var(--paper);
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+button {
+    font: inherit;
+}
+
+img {
+    display: block;
+    max-width: 100%;
+}
+
+.container {
+    width: min(1180px, calc(100% - 64px));
+    margin-inline: auto;
+}
+
+.section {
+    padding: 110px 0;
+}
+
+.section-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--line);
+}
+
+.section-label,
+.section-caption,
+.eyebrow {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1.4px;
+}
+
+.section-label {
+    color: var(--green);
+}
+
+.section-caption {
+    color: var(--muted);
+}
+
+.editorial-heading {
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: clamp(24px, 2.4vw, 32px);
+    font-weight: 500;
+    line-height: 1.2;
+    letter-spacing: -0.8px;
+}
+
+.editorial-heading span {
+    color: var(--ink);
+    font-style: italic;
+}
+
+.text-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--green);
+    color: var(--green);
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.text-link span {
+    transition: transform .2s ease;
+}
+
+.text-link:hover span {
+    transform: translate(3px, -3px);
+}
+@import "tailwindcss";
+@plugin "daisyui";
+
+/* CSS kamu yang sudah ada tetap dipertahankan */
