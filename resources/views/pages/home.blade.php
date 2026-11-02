@@ -6,92 +6,77 @@
 
 <div class="hero-statistics-reveal">
 {{-- HERO --}}
-<section class="school-hero overflow-hidden bg-[#F7F8F2] py-4 md:py-14 lg:py-[72px]">
-    <div class="mx-auto max-w-[1180px] px-5 sm:px-6 lg:px-8">
-        <div class="grid items-center gap-5 lg:grid-cols-[48fr_52fr] lg:gap-8">
-            <div class="order-2 max-w-[520px] lg:order-1">
-                <div class="mb-3 flex items-center gap-3 text-[10px] font-medium tracking-[0.16em] text-[#68746B] uppercase sm:text-[11px] md:mb-5">
-                    <span class="h-px w-7 bg-[#8FAE98]"></span>
-                    <span>SMK ISLAMIYAH CIPUTAT</span>
-                </div>
+<section class="school-hero" aria-labelledby="school-hero-title">
+    <div class="school-hero__inner">
+        <div class="school-hero__copy">
+            <h1 id="school-hero-title">
+                Belajar hari ini,
+                <span>siap menghadapi masa depan.</span>
+            </h1>
+            <p class="school-hero__description">
+                Temukan minat, kembangkan keterampilan, dan tumbuh bersama lingkungan belajar SMK Islamiyah Ciputat.
+            </p>
+            <div class="school-hero__actions">
+                <a class="school-hero__primary" href="{{ route('spmb') }}">SPMB Tahun Ajaran 2027/2028</a>
+                <a class="school-hero__secondary" href="{{ route('about') }}">Tentang sekolah</a>
+            </div>
+        </div>
 
-                <h1 class="font-serif text-[32px] font-medium leading-[1.1] tracking-[-0.035em] text-[#34483B] md:text-[38px] lg:text-[46px]">
-                    <span class="block">Belajar Hari Ini,</span>
-                    <span class="mt-0.5 block italic font-normal text-[#668875]">Siap</span>
-                    <span class="mt-0.5 block italic font-normal text-[#668875]">Menghadapi</span>
-                    <span class="mt-0.5 block italic font-normal text-[#668875]">Masa Depan.</span>
-                </h1>
+        <div class="school-hero__visual">
+            <span class="school-hero__circle" aria-hidden="true"></span>
+            <span class="school-hero__accent" aria-hidden="true"></span>
+            <span class="school-hero__outline" aria-hidden="true"></span>
 
-                <p class="mt-4 max-w-[480px] text-[13px] font-normal leading-[1.6] text-[#68746B] sm:text-[14px]">
-                    Tempat terbaik untuk mengembangkan pengetahuan, keterampilan praktis, dan karakter islami melalui pembelajaran yang relevan dengan kebutuhan dunia kerja.
-                </p>
+            <figure class="school-hero__photo">
+                <img
+                    class="school-hero__background"
+                    src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1200&q=85"
+                    alt="Siswa berdiskusi dan belajar bersama"
+                    fetchpriority="high"
+                >
+                <span class="school-hero__shade" aria-hidden="true"></span>
+            </figure>
 
-                <div class="mt-4 flex flex-wrap items-center gap-x-5 gap-y-3 md:mt-6">
-                    <a href="{{ route('spmb') }}" class="inline-flex h-11 items-center gap-2 rounded-lg bg-[#668875] px-5 text-[13px] font-semibold text-white transition-colors hover:bg-[#587964]">
-                        Informasi SPMB
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-4 w-4">
-                            <path fill-rule="evenodd" d="M5.22 14.78a.75.75 0 0 0 1.06 0L13.5 6.56v3.19a.75.75 0 0 0 1.5 0V4.75a.75.75 0 0 0-.75-.75h-5a.75.75 0 0 0 0 1.5h3.19l-7.22 7.22a.75.75 0 0 0 0 1.06Z" clip-rule="evenodd"/>
-                        </svg>
-                    </a>
-
-                    <a href="{{ route('about') }}" class="group inline-flex h-11 items-center gap-2 border-b border-[#E3E8DF] text-[13px] font-medium text-[#34483B] transition-colors hover:text-[#668875]">
-                        Tentang Sekolah
-                        <span class="transition-transform duration-200 group-hover:translate-x-1">→</span>
-                    </a>
-                </div>
+            <div class="school-hero__badge school-hero__badge--faith">
+                <span class="school-hero__star" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="m12 2.8 2.8 5.67 6.26.91-4.53 4.41 1.07 6.23L12 17.08l-5.6 2.94 1.07-6.23L2.94 9.38l6.26-.91L12 2.8Z"/>
+                    </svg>
+                </span>
+                Berbasis Islam
             </div>
 
-            <div class="relative order-1 mx-auto w-full max-w-[560px] lg:order-2">
-                <div aria-hidden="true" class="absolute -right-3 -top-3 h-16 w-16 bg-[radial-gradient(circle,#8FAE98_1.2px,transparent_1.4px)] bg-[size:10px_10px] opacity-60 sm:-right-4 sm:-top-4 sm:h-20 sm:w-20"></div>
-                <div aria-hidden="true" class="absolute -bottom-3 right-5 h-20 w-20 rounded-full bg-[#D8CBA9]/70 sm:-bottom-4 sm:right-8 sm:h-24 sm:w-24"></div>
-
-                <div class="relative h-[230px] sm:h-[250px] md:h-[340px] lg:h-[360px]">
-                    <div class="absolute inset-0 overflow-hidden rounded-2xl border border-[#E3E8DF] bg-white shadow-[0_16px_34px_rgba(52,72,59,0.10)] sm:rounded-[20px]">
-                        <img
-                            class="h-full w-full object-cover"
-                            src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1200&q=85"
-                            alt="Siswa belajar dan berdiskusi bersama di kelas"
-                        >
-                    </div>
-
-                    <div class="absolute -bottom-2 left-3 h-[42%] w-[30%] overflow-hidden rounded-xl border-4 border-[#F7F8F2] bg-white shadow-[0_10px_24px_rgba(52,72,59,0.14)] sm:-bottom-3 sm:left-5 sm:rounded-2xl">
-                        <img
-                            class="h-full w-full object-cover"
-                            src="https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=600&q=80"
-                            alt="Suasana kegiatan belajar di sekolah"
-                            loading="lazy"
-                        >
-                    </div>
-
-                    <div class="absolute -bottom-4 right-2 inline-flex items-center gap-2 rounded-xl border border-[#E3E8DF] bg-white px-3 py-2 shadow-[0_10px_24px_rgba(52,72,59,0.10)] sm:right-4">
-                        <span class="flex h-7 w-7 items-center justify-center rounded-full bg-[#E4EDE4] text-[12px] font-semibold text-[#668875]">06</span>
-                        <span class="text-[11px] font-medium text-[#34483B]">Program Keahlian</span>
-                    </div>
-                </div>
+            <div class="school-hero__badge school-hero__badge--spmb">
+                <span class="school-hero__calendar" aria-hidden="true">
+                    <i data-lucide="users"></i>
+                </span>
+                <span>
+                    <strong>1.000 siswa</strong>
+                    <small>Jumlah peserta didik</small>
+                </span>
             </div>
         </div>
     </div>
 </section>
 
-<section class="hero-statistics-reveal__stats bg-[#F7F8F2] px-5 py-3 sm:px-6 lg:px-8" aria-label="Statistik sekolah">
-    <div class="mx-auto max-w-[1180px] py-2">
-        <div class="grid grid-cols-2 md:grid-cols-4">
-            <div class="flex flex-col items-center gap-1 px-3 py-3 text-center">
-                <strong class="text-[22px] font-semibold leading-none text-[#34483B] md:text-[26px]">—</strong>
-                <span class="text-[11px] font-medium text-[#68746B] md:text-[12px]">Jumlah Siswa</span>
-            </div>
-            <div class="flex flex-col items-center gap-1 px-3 py-3 text-center">
-                <strong class="text-[22px] font-semibold leading-none text-[#34483B] md:text-[26px]">—</strong>
-                <span class="text-[11px] font-medium text-[#68746B] md:text-[12px]">Jumlah Guru</span>
-            </div>
-            <div class="flex flex-col items-center gap-1 px-3 py-3 text-center">
-                <strong class="text-[22px] font-semibold leading-none text-[#34483B] md:text-[26px]">—</strong>
-                <span class="text-[11px] font-medium text-[#68746B] md:text-[12px]">Tahun Berdiri</span>
-            </div>
-            <div class="flex flex-col items-center gap-1 px-3 py-3 text-center">
-                <strong class="text-[22px] font-semibold leading-none text-[#34483B] md:text-[26px]">—</strong>
-                <span class="text-[11px] font-medium text-[#68746B] md:text-[12px]">Jumlah Rombel</span>
-            </div>
+<section class="hero-statistics-reveal__stats" aria-label="Informasi sekolah">
+    <div class="hero-statistics-reveal__stats-inner">
+        <div class="hero-statistics-reveal__stat">
+            <strong>06</strong>
+            <span>Program Keahlian</span>
+        </div>
+        <div class="hero-statistics-reveal__stat">
+            <strong>1.000</strong>
+            <span>Jumlah Siswa</span>
+        </div>
+        <div class="hero-statistics-reveal__stat">
+            <strong>10</strong>
+            <span>Jumlah Guru</span>
+        </div>
+        <div class="hero-statistics-reveal__stat hero-statistics-reveal__stat--location">
+            <i data-lucide="map-pin" aria-hidden="true"></i>
+            <strong>Ciputat</strong>
+            <span>Tangerang Selatan</span>
         </div>
     </div>
 </section>
@@ -249,8 +234,8 @@
                     <span class="program-card-trigger-icon" aria-hidden="true">+</span>
                 </button>
                 <div class="program-card-content" id="program-mp-detail" role="region" aria-labelledby="program-mp-title" hidden>
-                    <figure class="program-card-visual">
-                        <img src="{{ asset('images/5.jpg') }}" alt="Poster Akuntansi sebagai visual pendukung program Manajemen Perkantoran" loading="lazy">
+                    <figure class="program-card-visual program-card-visual-placeholder" role="img" aria-label="Visual program Manajemen Perkantoran">
+                        <span>MP</span>
                     </figure>
                     <div class="program-card-details">
                         <span class="program-code">MP</span>
@@ -582,29 +567,90 @@
     </div>
 </section>
 
+<section class="bkk-section section">
+    <div class="container bkk-inner">
+        <div class="bkk-copy">
+            <span class="section-label">BKK</span>
+            <h2 class="editorial-heading">
+                Jembatan menuju
+                <span>karier dan peluang kerja.</span>
+            </h2>
+            <p>
+                Lihat informasi lowongan pekerjaan dan tracer study melalui layanan BKK SMK Islamiyah Ciputat.
+            </p>
+
+            <div class="bkk-links">
+                <a href="{{ route('bkk.jobs') }}">
+                    <span>01</span>
+                    <strong>Lowongan Pekerjaan</strong>
+                    <span aria-hidden="true">↗</span>
+                </a>
+                <a href="{{ route('bkk.tracer-study') }}">
+                    <span>02</span>
+                    <strong>Tracer Study</strong>
+                    <span aria-hidden="true">↗</span>
+                </a>
+            </div>
+
+        </div>
+
+        <div class="bkk-visual">
+            <div class="bkk-image-wrap">
+                <img
+                    src="https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=1200&q=85"
+                    alt="Suasana kegiatan belajar di kelas"
+                    loading="lazy"
+                >
+            </div>
+        </div>
+    </div>
+</section>
 
 {{-- SPMB --}}
-<section class="admission-section">
+<section class="admission-section" aria-labelledby="admission-title">
     <div class="container admission-inner">
 
-        <div>
-            <span class="section-label">PENERIMAAN PESERTA DIDIK BARU</span>
+        <div class="admission-copy">
+            <span class="section-label">SPMB tahun ajaran 2027/2028</span>
 
-            <h2>
+            <h2 id="admission-title">
                 Mulai langkah
                 <span>masa depanmu.</span>
             </h2>
 
             <p>
-                Dapatkan informasi penerimaan siswa baru dan pilih program yang sesuai dengan minatmu.
+                Lima langkah mudah untuk jadi siswa baru.
             </p>
 
             <a href="{{ route('spmb') }}" class="button-light">
-                Lihat Informasi SPMB <span>↗</span>
+                Lihat informasi SPMB
             </a>
         </div>
 
-        <span class="admission-mark" aria-hidden="true">I</span>
+        <ol class="admission-steps" aria-label="Lima langkah pendaftaran SPMB">
+            <li class="admission-step">
+                <span class="admission-step__number">1</span>
+                <span class="admission-step__label">Isi formulir</span>
+            </li>
+            <li class="admission-step">
+                <span class="admission-step__number">2</span>
+                <span class="admission-step__label">Kirim berkas</span>
+            </li>
+            <li class="admission-step">
+                <span class="admission-step__number">3</span>
+                <span class="admission-step__label">Ikut seleksi</span>
+            </li>
+            <li class="admission-step">
+                <span class="admission-step__number">4</span>
+                <span class="admission-step__label">Lihat hasil</span>
+            </li>
+            <li class="admission-step">
+                <span class="admission-step__number">5</span>
+                <span class="admission-step__label">Daftar ulang</span>
+            </li>
+        </ol>
+
+        <span class="admission-flag" aria-hidden="true"></span>
 
     </div>
 </section>

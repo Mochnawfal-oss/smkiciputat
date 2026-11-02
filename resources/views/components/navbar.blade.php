@@ -7,8 +7,8 @@
             <img class="brand-logo" src="{{ asset('images/logo/logo.PNG') }}" alt="Logo SMK Islamiyah Ciputat">
 
             <span class="brand-text">
-                <strong>SMK ISLAMIYAH</strong>
-                <small>CIPUTAT · TANGERANG SELATAN</small>
+                <strong>SMK Islamiyah</strong>
+                <small>Ciputat, Tangerang Selatan</small>
             </span>
         </a>
 
@@ -66,7 +66,7 @@
 
             {{-- Tombol SPMB --}}
             <a href="{{ route('spmb') }}" class="nav-cta">
-                <span>SPMB 2027/2028</span>
+                <span>SPMB</span>
                 <i data-lucide="arrow-up-right"></i>
             </a>
 
