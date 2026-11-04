@@ -271,57 +271,32 @@
 {{-- SAMBUTAN KEPALA SEKOLAH --}}
 <section class="principal-section section" aria-labelledby="principal-section-title">
     <div class="container">
-        <article class="teacher-card principal-card">
+        <article class="principal-card">
             <div class="principal-portrait">
-                <div class="principal-portrait-media">
-                    <span class="teacher-placeholder-photo" role="img" aria-label="Placeholder foto Kepala Sekolah">
-                        <span class="teacher-placeholder-person" aria-hidden="true"></span>
-                        <span class="teacher-photo-note">FOTO KEPALA SEKOLAH · TAMPIL UTUH</span>
+                <span class="principal-portrait-frame" aria-hidden="true">
+                    <span class="teacher-placeholder-photo">
+                        <span class="teacher-placeholder-person"></span>
                     </span>
-                    <span class="principal-portrait-caption">
-                        <span class="teacher-card-label">PIMPINAN SEKOLAH</span>
-                        <span class="teacher-card-title">Kepala Sekolah</span>
-                    </span>
-                    <div class="teacher-card-details principal-profile-details" id="teacher-profile-principal" aria-hidden="true" inert>
-                        <div class="teacher-popup-copy">
-                            <span class="teacher-card-label">PIMPINAN SEKOLAH</span>
-                            <h3>Nama Kepala Sekolah akan ditambahkan</h3>
-                            <p>Foto dan informasi profil resmi akan ditambahkan setelah tersedia.</p>
-                        </div>
-                    </div>
-                </div>
+                </span>
+                <span class="principal-name-badge">
+                    <strong>Nama Kepala Sekolah</strong>
+                    <small>Kepala SMK Islamiyah Ciputat</small>
+                </span>
             </div>
 
             <div class="principal-welcome">
-                <span class="principal-welcome-status">DRAF · MENUNGGU PENINJAUAN</span>
                 <span class="teacher-card-label">SAMBUTAN KEPALA SEKOLAH</span>
                 <h2 class="editorial-heading" id="principal-section-title">
                     Selamat datang di
                     <span>SMK Islamiyah Ciputat.</span>
                 </h2>
+                <p class="principal-greeting">Assalamu’alaikum warahmatullahi wabarakatuh.</p>
                 <blockquote>
-                    <p>Assalamu’alaikum warahmatullahi wabarakatuh.</p>
-                    <p>Selamat datang di SMK Islamiyah Ciputat. Kami berkomitmen mendampingi peserta didik untuk tumbuh, mengembangkan karakter, serta membekali diri dengan pengetahuan dan keterampilan.</p>
-                    <p>Semoga website ini dapat menjadi sumber informasi yang bermanfaat bagi peserta didik, orang tua, dan masyarakat untuk mengenal sekolah kami lebih dekat.</p>
-                    <p>Wassalamu’alaikum warahmatullahi wabarakatuh.</p>
+                    <p>Kami berkomitmen mendampingi peserta didik untuk tumbuh, berkarakter, dan menguasai pengetahuan serta keterampilan.</p>
                 </blockquote>
-
-                <div class="principal-signature">
-                    <span class="principal-signature-icon" aria-hidden="true"></span>
-                    <span>
-                        <strong>Nama Kepala Sekolah</strong>
-                        <small>SMK Islamiyah Ciputat</small>
-                    </span>
-                </div>
-
-                <div class="principal-actions">
-                    <button class="teacher-card-trigger principal-profile-trigger" type="button" aria-expanded="false" aria-controls="teacher-profile-principal">
-                        Lihat profil <span aria-hidden="true">→</span>
-                    </button>
-                    <a href="{{ route('about') }}">Kenali sekolah kami</a>
-                </div>
+                <p class="principal-supporting-copy">Semoga website ini membantu peserta didik, orang tua, dan masyarakat mengenal SMK Islamiyah Ciputat lebih dekat.</p>
+                <a class="principal-about-link" href="{{ route('about') }}">Kenali sekolah kami <span aria-hidden="true">→</span></a>
             </div>
-
         </article>
     </div>
 </section>
@@ -570,10 +545,10 @@
 <section class="bkk-section section">
     <div class="container bkk-inner">
         <div class="bkk-copy">
-            <span class="section-label">BKK</span>
+            <span class="section-label">Bursa Kerja Khusus</span>
             <h2 class="editorial-heading">
                 Jembatan menuju
-                <span>karier dan peluang kerja.</span>
+                karier dan peluang kerja.
             </h2>
             <p>
                 Lihat informasi lowongan pekerjaan dan tracer study melalui layanan BKK SMK Islamiyah Ciputat.
@@ -581,26 +556,46 @@
 
             <div class="bkk-links">
                 <a href="{{ route('bkk.jobs') }}">
-                    <span>01</span>
-                    <strong>Lowongan Pekerjaan</strong>
-                    <span aria-hidden="true">↗</span>
+                    <span class="bkk-link-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <rect x="4" y="7" width="16" height="13" rx="2" stroke="currentColor" stroke-width="1.8"/>
+                            <path d="M9 7V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V7M4 12h16M10 12v2h4v-2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </span>
+                    <span class="bkk-link-copy">
+                        <strong>Lowongan pekerjaan</strong>
+                        <small>Lowongan terbaru dari perusahaan mitra</small>
+                    </span>
+                    <span class="bkk-link-arrow" aria-hidden="true">›</span>
                 </a>
                 <a href="{{ route('bkk.tracer-study') }}">
-                    <span>02</span>
-                    <strong>Tracer Study</strong>
-                    <span aria-hidden="true">↗</span>
+                    <span class="bkk-link-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path d="M5 19V11M10 19V5M15 19v-6M20 19V9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        </svg>
+                    </span>
+                    <span class="bkk-link-copy">
+                        <strong>Tracer study</strong>
+                        <small>Data alumni setelah lulus dari sekolah</small>
+                    </span>
+                    <span class="bkk-link-arrow" aria-hidden="true">›</span>
                 </a>
             </div>
-
         </div>
 
         <div class="bkk-visual">
+            <span class="bkk-image-accent" aria-hidden="true"></span>
+            <span class="bkk-image-outline" aria-hidden="true"></span>
             <div class="bkk-image-wrap">
                 <img
                     src="https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=1200&q=85"
                     alt="Suasana kegiatan belajar di kelas"
                     loading="lazy"
                 >
+            </div>
+            <div class="bkk-image-badge">
+                <strong>2 layanan</strong>
+                <span>Lowongan dan tracer study di satu tempat</span>
             </div>
         </div>
     </div>
@@ -630,27 +625,41 @@
         <ol class="admission-steps" aria-label="Lima langkah pendaftaran SPMB">
             <li class="admission-step">
                 <span class="admission-step__number">1</span>
-                <span class="admission-step__label">Isi formulir</span>
+                <span class="admission-step__content">
+                    <span class="admission-step__label">Isi formulir</span>
+                    <span class="admission-step__description">Lengkapi data diri</span>
+                </span>
             </li>
             <li class="admission-step">
                 <span class="admission-step__number">2</span>
-                <span class="admission-step__label">Kirim berkas</span>
+                <span class="admission-step__content">
+                    <span class="admission-step__label">Kirim berkas</span>
+                    <span class="admission-step__description">Unggah dokumen</span>
+                </span>
             </li>
             <li class="admission-step">
                 <span class="admission-step__number">3</span>
-                <span class="admission-step__label">Ikut seleksi</span>
+                <span class="admission-step__content">
+                    <span class="admission-step__label">Ikut seleksi</span>
+                    <span class="admission-step__description">Ikuti jadwal tes</span>
+                </span>
             </li>
             <li class="admission-step">
                 <span class="admission-step__number">4</span>
-                <span class="admission-step__label">Lihat hasil</span>
+                <span class="admission-step__content">
+                    <span class="admission-step__label">Lihat hasil</span>
+                    <span class="admission-step__description">Cek pengumuman</span>
+                </span>
             </li>
             <li class="admission-step">
                 <span class="admission-step__number">5</span>
-                <span class="admission-step__label">Daftar ulang</span>
+                <span class="admission-step__content">
+                    <span class="admission-step__label">Daftar ulang</span>
+                    <span class="admission-step__description">Konfirmasi tempatmu</span>
+                </span>
+                <span class="admission-flag" aria-hidden="true"></span>
             </li>
         </ol>
-
-        <span class="admission-flag" aria-hidden="true"></span>
 
     </div>
 </section>

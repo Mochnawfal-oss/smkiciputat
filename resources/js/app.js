@@ -114,16 +114,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const trigger = card.querySelector('.teacher-card-trigger');
         const closeButton = card.querySelector('.teacher-card-close');
         const isPrincipalCard = card.classList.contains('principal-card');
+        const isEducatorCard = card.classList.contains('educator-card');
         const hoverTarget = isPrincipalCard
-            ? card.querySelector('.principal-portrait-media')
+            ? card.querySelector('.principal-portrait-frame')
             : card;
         let skipNextFocusOpen = false;
-
-        hoverTarget.addEventListener('pointerenter', (event) => {
-            if (event.pointerType === 'mouse') {
-                setTeacherCardOpen(card, true);
-            }
-        });
 
         const closeOnPointerLeave = (event) => {
             if (event.pointerType === 'mouse') {
@@ -131,20 +126,28 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
 
-        card.addEventListener('pointerleave', closeOnPointerLeave);
+        if (!isEducatorCard) {
+            hoverTarget.addEventListener('pointerenter', (event) => {
+                if (event.pointerType === 'mouse') {
+                    setTeacherCardOpen(card, true);
+                }
+            });
 
-        if (isPrincipalCard) {
-            hoverTarget.addEventListener('pointerleave', closeOnPointerLeave);
+            card.addEventListener('pointerleave', closeOnPointerLeave);
+
+            if (isPrincipalCard) {
+                hoverTarget.addEventListener('pointerleave', closeOnPointerLeave);
+            }
         }
 
         card.addEventListener('focusin', (event) => {
-            if (!skipNextFocusOpen && (!isPrincipalCard || event.target === trigger)) {
+            if (!isEducatorCard && !skipNextFocusOpen && (!isPrincipalCard || event.target === trigger)) {
                 setTeacherCardOpen(card, true);
             }
         });
 
         card.addEventListener('focusout', (event) => {
-            if (isPrincipalCard ? event.relatedTarget !== trigger : !card.contains(event.relatedTarget)) {
+            if (!isEducatorCard && (isPrincipalCard ? event.relatedTarget !== trigger : !card.contains(event.relatedTarget))) {
                 setTeacherCardOpen(card, false);
             }
         });
@@ -159,12 +162,20 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         trigger.addEventListener('click', (event) => {
-            if (event.detail === 0 || event.pointerType === 'touch') {
+            if (isEducatorCard || event.detail === 0 || event.pointerType === 'touch') {
                 setTeacherCardOpen(card, trigger.getAttribute('aria-expanded') !== 'true');
             } else {
                 setTeacherCardOpen(card, true);
             }
         });
+
+        if (isEducatorCard) {
+            document.addEventListener('click', (event) => {
+                if (event.target instanceof Node && card.classList.contains('is-open') && !card.contains(event.target)) {
+                    setTeacherCardOpen(card, false);
+                }
+            });
+        }
 
         card.addEventListener('keydown', (event) => {
             if (event.key === 'Escape') {
