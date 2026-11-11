@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
 @import "./pages/home.css";
+@import "./admin.css";
 
 :root {
     font-family: "Instrument Sans", sans-serif;
@@ -117,4 +118,16 @@ img {
 @import "tailwindcss";
 @plugin "daisyui";
 
-/* CSS kamu yang sudah ada tetap dipertahankan */
+body.menu-open {
+    overflow: hidden;
+}
+
+@media (max-width: 900px) {
+    .site-header .dropdown-arrow {
+        transition: transform 0.25s ease;
+    }
+
+    .site-header .nav-dropdown.open .dropdown-arrow {
+        transform: rotate(180deg);
+    }
+}

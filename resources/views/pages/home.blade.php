@@ -1,667 +1,383 @@
 @extends('layouts.app')
 
-@section('title', 'Beranda | SMK Islamiyah Ciputat')
+@section('title', $siteSettings['seo.title'])
+@section('meta_description', $siteSettings['seo.description'])
 
 @section('content')
-
-<div class="hero-statistics-reveal">
-{{-- HERO --}}
-<section class="school-hero" aria-labelledby="school-hero-title">
-    <div class="school-hero__inner">
-        <div class="school-hero__copy">
-            <h1 id="school-hero-title">
-                Belajar hari ini,
-                <span>siap menghadapi masa depan.</span>
-            </h1>
-            <p class="school-hero__description">
-                Temukan minat, kembangkan keterampilan, dan tumbuh bersama lingkungan belajar SMK Islamiyah Ciputat.
-            </p>
-            <div class="school-hero__actions">
-                <a class="school-hero__primary" href="{{ route('spmb') }}">SPMB Tahun Ajaran 2027/2028</a>
-                <a class="school-hero__secondary" href="{{ route('about') }}">Tentang sekolah</a>
-            </div>
-        </div>
-
-        <div class="school-hero__visual">
-            <span class="school-hero__circle" aria-hidden="true"></span>
-            <span class="school-hero__accent" aria-hidden="true"></span>
-            <span class="school-hero__outline" aria-hidden="true"></span>
-
-            <figure class="school-hero__photo">
-                <img
-                    class="school-hero__background"
-                    src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=1200&q=85"
-                    alt="Siswa berdiskusi dan belajar bersama"
-                    fetchpriority="high"
-                >
-                <span class="school-hero__shade" aria-hidden="true"></span>
-            </figure>
-
-            <div class="school-hero__badge school-hero__badge--faith">
-                <span class="school-hero__star" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" fill="currentColor">
-                        <path d="m12 2.8 2.8 5.67 6.26.91-4.53 4.41 1.07 6.23L12 17.08l-5.6 2.94 1.07-6.23L2.94 9.38l6.26-.91L12 2.8Z"/>
-                    </svg>
-                </span>
-                Berbasis Islam
-            </div>
-
-            <div class="school-hero__badge school-hero__badge--spmb">
-                <span class="school-hero__calendar" aria-hidden="true">
-                    <i data-lucide="users"></i>
-                </span>
-                <span>
-                    <strong>1.000 siswa</strong>
-                    <small>Jumlah peserta didik</small>
-                </span>
-            </div>
-        </div>
-    </div>
-</section>
-
-<section class="hero-statistics-reveal__stats" aria-label="Informasi sekolah">
-    <div class="hero-statistics-reveal__stats-inner">
-        <div class="hero-statistics-reveal__stat">
-            <strong>06</strong>
-            <span>Program Keahlian</span>
-        </div>
-        <div class="hero-statistics-reveal__stat">
-            <strong>1.000</strong>
-            <span>Jumlah Siswa</span>
-        </div>
-        <div class="hero-statistics-reveal__stat">
-            <strong>10</strong>
-            <span>Jumlah Guru</span>
-        </div>
-        <div class="hero-statistics-reveal__stat hero-statistics-reveal__stat--location">
-            <i data-lucide="map-pin" aria-hidden="true"></i>
-            <strong>Ciputat</strong>
-            <span>Tangerang Selatan</span>
-        </div>
-    </div>
-</section>
-
-{{-- PROFIL SINGKAT --}}
-<section class="hero-statistics-reveal__about overflow-hidden bg-[#F7F8F2] py-12 md:py-16 lg:py-[72px]" id="profil">
-    <div class="mx-auto max-w-[1180px] px-5 sm:px-6 lg:px-8">
-        <div class="grid grid-cols-1 items-center gap-8 lg:grid-cols-12">
-            <div class="relative order-1 mx-auto w-full max-w-[520px] lg:col-span-5 lg:mx-0">
-                <div aria-hidden="true" class="absolute -bottom-3 -left-3 h-24 w-24 rounded-[20px] bg-[#E4EDE4] sm:-bottom-4 sm:-left-4"></div>
-                <div aria-hidden="true" class="absolute -right-3 -top-3 h-16 w-16 bg-[radial-gradient(circle,#8FAE98_1px,transparent_1.2px)] bg-[size:9px_9px] opacity-60"></div>
-
-                <figure class="relative m-0 h-[230px] overflow-hidden rounded-[18px] border border-[#E3E8DF] bg-white shadow-[0_14px_30px_rgba(52,72,59,0.10)] sm:h-[250px] lg:h-[400px] lg:rounded-[24px]">
-                    <img
-                        class="h-full w-full object-cover"
-                        src="https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=1000&q=85"
-                        alt="Kegiatan belajar siswa di dalam kelas"
-                        loading="lazy"
-                    >
-
-                    <figcaption class="absolute inset-x-0 bottom-0 flex items-center justify-between bg-gradient-to-t from-[#34483B]/70 to-transparent px-4 pb-4 pt-10 text-[10px] font-medium tracking-[0.1em] text-white">
-                        <span>PROSES PEMBELAJARAN</span>
-                        <span>01 / 02</span>
-                    </figcaption>
-                </figure>
-            </div>
-
-            <div class="order-2 lg:col-span-7">
-                <p class="mb-3 text-[11px] font-semibold tracking-[0.12em] text-[#668875]">
-                    TENTANG SEKOLAH
-                </p>
-
-                <h2 class="mb-5 max-w-[560px] font-serif text-[30px] font-medium leading-[1.15] tracking-[-0.025em] text-[#34483B] md:text-[32px] lg:text-[38px]">
-                    Pendidikan yang membekali
-                    <span class="font-normal italic">lebih dari sekadar</span>
-                    pengetahuan.
-                </h2>
-
-                <div class="space-y-4 text-[13px] font-normal leading-[1.65] text-[#68746B] md:text-[14px]">
-                    <p>
-                        SMK Islamiyah Ciputat membentuk siswa dengan pengetahuan, keterampilan, dan karakter yang siap menghadapi masa depan.
-                    </p>
-
-                    <p>
-                        Beragam program keahlian membantu siswa menemukan minat, mengembangkan kemampuan, dan siap untuk melanjutkan pendidikan atau bekerja.
-                    </p>
-                </div>
-
-                <a href="{{ route('about') }}" class="mt-5 inline-flex h-[42px] w-full items-center justify-center gap-2 rounded-[11px] bg-[#668875] px-5 text-[13px] font-medium text-white transition-colors hover:bg-[#587964] lg:w-auto">
-                    Mengenal Sekolah
-                    <i data-lucide="arrow-up-right" class="h-4 w-4"></i>
-                </a>
-            </div>
-        </div>
-    </div>
-</section>
-</div>
-
-{{-- PROGRAM KEAHLIAN --}}
-<section class="programs-section section">
-    <div class="container">
-
-        <div class="section-heading">
-            <span class="section-label">PROGRAM PENDIDIKAN</span>
-            <span class="section-caption">ENAM BIDANG KEAHLIAN</span>
-        </div>
-
-        <div class="program-header">
-            <h2 class="editorial-heading">
-                Pilih bidang yang
-                <span>cocok untuk masa depanmu.</span>
-            </h2>
-
-            <p>
-                Kenali program keahlian yang tersedia dan pilih jalur belajar yang sesuai dengan minat dan kemampuanmu.
-            </p>
-        </div>
-
-        <div class="program-grid" data-program-accordion>
-            <article class="program-card is-active" data-active="true" style="--program-color: #b86f4d; --program-surface: #f5e9e2;">
-                <button class="program-card-trigger" type="button" aria-expanded="true" aria-controls="program-kuliner-detail" aria-label="Pilih program Kuliner">
-                    <span class="program-card-rail-label">Kuliner</span>
-                    <span class="program-card-trigger-icon" aria-hidden="true">+</span>
-                </button>
-                <div class="program-card-content" id="program-kuliner-detail" role="region" aria-labelledby="program-kuliner-title">
-                    <figure class="program-card-visual">
-                        <img src="{{ asset('images/2.jpg') }}" alt="Poster program Kuliner" loading="lazy">
-                    </figure>
-                    <div class="program-card-details">
-                        <span class="program-code">KULINER</span>
-                        <h3 id="program-kuliner-title">Kuliner</h3>
-                        <p>Belajar pengolahan makanan, penyajian, dan keterampilan kuliner.</p>
-                        <a href="{{ route('program.kuliner') }}">Pelajari program <span aria-hidden="true">↗</span></a>
+    @if ($siteSettings['home.hero.visible'])
+        <section class="school-hero" aria-labelledby="school-hero-title">
+            <div class="school-hero__inner">
+                <div class="school-hero__copy">
+                    <h1 id="school-hero-title">{{ $siteSettings['home.hero.title'] }}</h1>
+                    <p class="school-hero__description">{{ $siteSettings['home.hero.description'] }}</p>
+                    @if ($siteSettings['home.hero.slogan'])
+                        <p class="school-hero__description">{{ $siteSettings['home.hero.slogan'] }}</p>
+                    @endif
+                    <div class="school-hero__actions">
+                        <a class="school-hero__primary" href="{{ $siteSettings['home.hero.primary_url'] }}">{{ $siteSettings['home.hero.primary_label'] }}</a>
+                        <a class="school-hero__secondary" href="{{ $siteSettings['home.hero.secondary_url'] }}">{{ $siteSettings['home.hero.secondary_label'] }}</a>
                     </div>
                 </div>
-            </article>
-
-            <article class="program-card" data-active="false" style="--program-color: #a75483; --program-surface: #f4e7ef;">
-                <button class="program-card-trigger" type="button" aria-expanded="false" aria-controls="program-dkv-detail" aria-label="Pilih program DKV">
-                    <span class="program-card-rail-label">DKV</span>
-                    <span class="program-card-trigger-icon" aria-hidden="true">+</span>
-                </button>
-                <div class="program-card-content" id="program-dkv-detail" role="region" aria-labelledby="program-dkv-title" hidden>
-                    <figure class="program-card-visual">
-                        <img src="{{ asset('images/3.jpg') }}" alt="Poster program DKV" loading="lazy">
-                    </figure>
-                    <div class="program-card-details">
-                        <span class="program-code">DKV</span>
-                        <h3 id="program-dkv-title">DKV</h3>
-                        <p>Mengasah kreativitas dalam desain grafis dan komunikasi visual.</p>
-                        <a href="{{ route('program.dkv') }}">Pelajari program <span aria-hidden="true">↗</span></a>
+                @if ($siteSettings['home.hero.image'])
+                    <div class="school-hero__visual">
+                        <span class="school-hero__circle" aria-hidden="true"></span>
+                        <span class="school-hero__accent" aria-hidden="true"></span>
+                        <span class="school-hero__outline" aria-hidden="true"></span>
+                        <figure class="school-hero__photo">
+                            <img class="school-hero__background" src="{{ $siteConfiguration->imageUrl($siteSettings['home.hero.image']) }}" alt="{{ $siteSettings['home.hero.image_alt'] }}" fetchpriority="high">
+                            <span class="school-hero__shade" aria-hidden="true"></span>
+                        </figure>
+                        @if ($siteSettings['home.hero.badge'])
+                            <div class="school-hero__badge school-hero__badge--faith">{{ $siteSettings['home.hero.badge'] }}</div>
+                        @endif
+                        @if ($siteSettings['home.hero.student_count'])
+                            <div class="school-hero__badge school-hero__badge--spmb">
+                                <span class="school-hero__calendar" aria-hidden="true"><i data-lucide="users"></i></span>
+                                <span><strong>{{ $siteSettings['home.hero.student_count'] }}</strong><small>Jumlah peserta didik</small></span>
+                            </div>
+                        @endif
                     </div>
-                </div>
-            </article>
-
-            <article class="program-card" data-active="false" style="--program-color: #567cab; --program-surface: #e8eef5;">
-                <button class="program-card-trigger" type="button" aria-expanded="false" aria-controls="program-tkj-detail" aria-label="Pilih program TKJ">
-                    <span class="program-card-rail-label">TKJ</span>
-                    <span class="program-card-trigger-icon" aria-hidden="true">+</span>
-                </button>
-                <div class="program-card-content" id="program-tkj-detail" role="region" aria-labelledby="program-tkj-title" hidden>
-                    <figure class="program-card-visual">
-                        <img src="{{ asset('images/4.jpg') }}" alt="Poster program TKJ" loading="lazy">
-                    </figure>
-                    <div class="program-card-details">
-                        <span class="program-code">TKJ</span>
-                        <h3 id="program-tkj-title">TKJ</h3>
-                        <p>Memahami komputer, jaringan, dan teknologi informasi modern.</p>
-                        <a href="{{ route('program.tkj') }}">Pelajari program <span aria-hidden="true">↗</span></a>
-                    </div>
-                </div>
-            </article>
-
-            <article class="program-card" data-active="false" style="--program-color: #43836c; --program-surface: #e8f0eb;">
-                <button class="program-card-trigger" type="button" aria-expanded="false" aria-controls="program-ak-detail" aria-label="Pilih program Akuntansi">
-                    <span class="program-card-rail-label">Akuntansi</span>
-                    <span class="program-card-trigger-icon" aria-hidden="true">+</span>
-                </button>
-                <div class="program-card-content" id="program-ak-detail" role="region" aria-labelledby="program-ak-title" hidden>
-                    <figure class="program-card-visual">
-                        <img src="{{ asset('images/5.jpg') }}" alt="Poster program Akuntansi" loading="lazy">
-                    </figure>
-                    <div class="program-card-details">
-                        <span class="program-code">AK</span>
-                        <h3 id="program-ak-title">Akuntansi</h3>
-                        <p>Belajar pencatatan transaksi dan pengelolaan keuangan.</p>
-                        <a href="{{ route('program.ak') }}">Pelajari program <span aria-hidden="true">↗</span></a>
-                    </div>
-                </div>
-            </article>
-
-            <article class="program-card" data-active="false" style="--program-color: #70589b; --program-surface: #eeeaf4;">
-                <button class="program-card-trigger" type="button" aria-expanded="false" aria-controls="program-mp-detail" aria-label="Pilih program Manajemen Perkantoran">
-                    <span class="program-card-rail-label">Manajemen Perkantoran</span>
-                    <span class="program-card-trigger-icon" aria-hidden="true">+</span>
-                </button>
-                <div class="program-card-content" id="program-mp-detail" role="region" aria-labelledby="program-mp-title" hidden>
-                    <figure class="program-card-visual program-card-visual-placeholder" role="img" aria-label="Visual program Manajemen Perkantoran">
-                        <span>MP</span>
-                    </figure>
-                    <div class="program-card-details">
-                        <span class="program-code">MP</span>
-                        <h3 id="program-mp-title">Manajemen Perkantoran</h3>
-                        <p>Mengembangkan kemampuan administrasi dan manajemen kantor.</p>
-                        <a href="{{ route('program.mp') }}">Pelajari program <span aria-hidden="true">↗</span></a>
-                    </div>
-                </div>
-            </article>
-
-            <article class="program-card" data-active="false" style="--program-color: #46534c; --program-surface: #e9ede9;">
-                <button class="program-card-trigger" type="button" aria-expanded="false" aria-controls="program-bd-detail" aria-label="Pilih program Bisnis Digital">
-                    <span class="program-card-rail-label">Bisnis Digital</span>
-                    <span class="program-card-trigger-icon" aria-hidden="true">+</span>
-                </button>
-                <div class="program-card-content" id="program-bd-detail" role="region" aria-labelledby="program-bd-title" hidden>
-                    <figure class="program-card-visual">
-                        <img src="{{ asset('images/1.jpg') }}" alt="Poster program Bisnis Digital" loading="lazy">
-                    </figure>
-                    <div class="program-card-details">
-                        <span class="program-code">BD</span>
-                        <h3 id="program-bd-title">Bisnis Digital</h3>
-                        <p>Mengembangkan kemampuan bisnis dan pemanfaatan teknologi digital.</p>
-                        <a href="{{ route('program.bd') }}">Pelajari program <span aria-hidden="true">↗</span></a>
-                    </div>
-                </div>
-            </article>
-        </div>
-        <p class="program-hint">Arahkan kursor ke kartu atau pilih dengan sentuhan untuk melihat detail program.</p>
-    </div>
-</section>
-
-{{-- SAMBUTAN KEPALA SEKOLAH --}}
-<section class="principal-section section" aria-labelledby="principal-section-title">
-    <div class="container">
-        <article class="principal-card">
-            <div class="principal-portrait">
-                <span class="principal-portrait-frame" aria-hidden="true">
-                    <span class="teacher-placeholder-photo">
-                        <span class="teacher-placeholder-person"></span>
-                    </span>
-                </span>
-                <span class="principal-name-badge">
-                    <strong>Nama Kepala Sekolah</strong>
-                    <small>Kepala SMK Islamiyah Ciputat</small>
-                </span>
+                @endif
             </div>
+        </section>
+    @endif
 
-            <div class="principal-welcome">
-                <span class="teacher-card-label">SAMBUTAN KEPALA SEKOLAH</span>
-                <h2 class="editorial-heading" id="principal-section-title">
-                    Selamat datang di
-                    <span>SMK Islamiyah Ciputat.</span>
-                </h2>
-                <p class="principal-greeting">Assalamu’alaikum warahmatullahi wabarakatuh.</p>
-                <blockquote>
-                    <p>Kami berkomitmen mendampingi peserta didik untuk tumbuh, berkarakter, dan menguasai pengetahuan serta keterampilan.</p>
-                </blockquote>
-                <p class="principal-supporting-copy">Semoga website ini membantu peserta didik, orang tua, dan masyarakat mengenal SMK Islamiyah Ciputat lebih dekat.</p>
-                <a class="principal-about-link" href="{{ route('about') }}">Kenali sekolah kami <span aria-hidden="true">→</span></a>
+    @if ($siteSettings['home.stats.visible'])
+        <section class="hero-statistics-reveal__stats" aria-label="Informasi sekolah">
+            <div class="hero-statistics-reveal__stats-inner">
+                <div class="hero-statistics-reveal__stat">
+                    <strong>{{ str_pad((string) $programs->count(), 2, '0', STR_PAD_LEFT) }}</strong>
+                    <span>Program Keahlian</span>
+                </div>
+                <div class="hero-statistics-reveal__stat">
+                    <strong>{{ $siteSettings['home.stats.student_count'] }}</strong>
+                    <span>Jumlah Siswa</span>
+                </div>
+                <div class="hero-statistics-reveal__stat">
+                    <strong>{{ $siteSettings['home.stats.teacher_count'] }}</strong>
+                    <span>Jumlah Guru</span>
+                </div>
+                <div class="hero-statistics-reveal__stat hero-statistics-reveal__stat--location">
+                    <i data-lucide="map-pin" aria-hidden="true"></i>
+                    <strong>{{ $siteSettings['home.stats.city'] }}</strong>
+                    <span>{{ $siteSettings['home.stats.region'] }}</span>
+                </div>
             </div>
-        </article>
-    </div>
-</section>
+        </section>
+    @endif
 
-{{-- TENAGA PENDIDIK --}}
-<section class="teacher-section section" aria-labelledby="teacher-section-title">
-    <div class="container">
-        <div class="educator-section-header">
-            <div>
-                <span class="section-label">TENAGA PENDIDIK</span>
-                <h2 class="editorial-heading" id="teacher-section-title">
-                    Para pendidik yang
-                    <span>mendampingi perjalanan belajar siswa.</span>
-                </h2>
-            </div>
-            <p>Kenali para pendidik yang mendampingi perjalanan belajar siswa.</p>
-        </div>
-
-        <div class="teacher-grid educator-grid">
-            @foreach (range(1, 6) as $profile)
-                <article class="teacher-card educator-card">
-                    <button class="teacher-card-trigger" type="button" aria-expanded="false" aria-controls="teacher-profile-educator-{{ $profile }}" aria-label="Lihat pratinjau profil tenaga pendidik">
-                        <span class="teacher-placeholder-photo" aria-hidden="true">
-                            <span class="teacher-placeholder-person"></span>
-                            <span class="teacher-photo-note">FOTO GURU · TAMPIL UTUH</span>
-                        </span>
-                        <span class="teacher-card-caption">
-                            <span class="teacher-card-label">GURU</span>
-                            <span class="teacher-card-title">Nama tenaga pendidik</span>
-                            <span class="educator-card-subtitle">Mata pelajaran / jabatan</span>
-                        </span>
-                    </button>
-
-                    <div class="teacher-card-details educator-profile-details" id="teacher-profile-educator-{{ $profile }}" aria-hidden="true" inert>
-                        <div class="teacher-popup-copy">
-                            <span class="teacher-card-label">PROFIL TENAGA PENDIDIK</span>
-                            <h3>Nama tenaga pendidik akan ditambahkan</h3>
-                            <p>Foto, mata pelajaran atau jabatan, dan deskripsi singkat akan ditambahkan setelah data resmi tersedia.</p>
-                            <span class="teacher-popup-hint">Pratinjau tampilan profil</span>
+    @if ($siteSettings['home.about.visible'])
+        <section class="hero-statistics-reveal__about overflow-hidden bg-[#E4E8DE] py-10 md:py-14 lg:py-16" id="profil">
+            <div class="mx-auto max-w-[1180px] px-5 sm:px-6 lg:px-8">
+                <div class="overflow-hidden rounded-[14px] bg-[#F7F8F2] shadow-[0_16px_36px_rgba(52,72,59,0.12)]">
+                    <div class="grid grid-cols-1 gap-5 px-6 pt-7 sm:px-8 sm:pt-8 md:grid-cols-2 md:gap-8 md:px-10 lg:px-12 lg:pt-10">
+                        <h2 class="max-w-[470px] font-sans text-[28px] font-extrabold leading-[1.05] tracking-[-0.045em] text-[#103526] sm:text-[32px] lg:text-[38px]">{{ $siteSettings['home.about.heading'] }}</h2>
+                        <div class="flex flex-col items-start">
+                            <div class="space-y-3 text-[12px] leading-[1.6] text-[#53665B] sm:text-[13px]">
+                                <p>{{ $siteSettings['home.about.paragraph_1'] }}</p>
+                                <p>{{ $siteSettings['home.about.paragraph_2'] }}</p>
+                            </div>
                         </div>
+                    </div>
+                    @if ($siteSettings['home.about.image'])
+                        <figure class="m-0 mt-6 aspect-[1.55/1] overflow-hidden sm:mt-8 sm:aspect-[2.2/1] md:mt-6 md:aspect-[2.8/1] lg:mt-5 lg:aspect-[3.2/1]">
+                            <img class="h-full w-full object-cover object-[center_62%]" src="{{ $siteConfiguration->imageUrl($siteSettings['home.about.image']) }}" alt="{{ $siteSettings['home.about.image_alt'] }}" loading="lazy">
+                        </figure>
+                    @endif
+                </div>
+            </div>
+        </section>
+    @endif
+
+    <section class="programs-section section" id="program-keahlian">
+        <div class="container">
+            <div class="section-heading">
+                <span class="section-label">PROGRAM PENDIDIKAN</span>
+                <span class="section-caption">{{ str_pad((string) $programs->count(), 2, '0', STR_PAD_LEFT) }} BIDANG KEAHLIAN</span>
+            </div>
+            <div class="program-header">
+                <h2 class="editorial-heading">Pilih bidang yang <span>cocok untuk masa depanmu.</span></h2>
+                <p>Kenali program keahlian yang tersedia dan pilih jalur belajar yang sesuai dengan minat dan kemampuanmu.</p>
+            </div>
+            @if ($programs->isNotEmpty())
+                @php
+                    $programColors = config('site-content.program_colors');
+                @endphp
+                <div class="program-grid" data-program-accordion>
+                    @foreach ($programs as $program)
+                        @php
+                            $programColor = $programColors[$loop->index % count($programColors)];
+                            $programId = 'program-'.$program->slug.'-detail';
+                        @endphp
+                        <article class="program-card {{ $loop->first ? 'is-active' : '' }}" data-active="{{ $loop->first ? 'true' : 'false' }}" style="--program-color: {{ $programColor[0] }}; --program-surface: {{ $programColor[1] }};">
+                            <button class="program-card-trigger" type="button" aria-expanded="{{ $loop->first ? 'true' : 'false' }}" aria-controls="{{ $programId }}" aria-label="Pilih program {{ $program->title }}">
+                                <span class="program-card-rail-label">{{ $program->title }}</span>
+                                <span class="program-card-trigger-icon" aria-hidden="true">+</span>
+                            </button>
+                            <div class="program-card-content" id="{{ $programId }}" role="region" aria-label="Informasi program {{ $program->title }}" @if (! $loop->first) hidden @endif>
+                                @if ($program->image_path)
+                                    <figure class="program-card-visual">
+                                        <img src="{{ $siteConfiguration->imageUrl($program->image_path) }}" alt="Foto {{ $program->title }}" loading="lazy">
+                                    </figure>
+                                @else
+                                    <figure class="program-card-visual program-card-visual-placeholder" role="img" aria-label="Visual program {{ $program->title }}">
+                                        <span>{{ data_get($program->metadata, 'abbreviation', $program->title) }}</span>
+                                    </figure>
+                                @endif
+                                <div class="program-card-details">
+                                    <span class="program-code">{{ data_get($program->metadata, 'abbreviation', $program->title) }}</span>
+                                    <h3>{{ $program->title }}</h3>
+                                    <p>{{ $program->summary }}</p>
+                                    <a href="{{ route('program.show', $program->slug) }}">Pelajari program <span aria-hidden="true">↗</span></a>
+                                </div>
+                            </div>
+                        </article>
+                    @endforeach
+                </div>
+                <p class="program-hint">Arahkan kursor ke kartu atau pilih dengan sentuhan untuk melihat detail program.</p>
+            @else
+                <p class="program-hint">Informasi program keahlian akan segera diperbarui.</p>
+            @endif
+        </div>
+    </section>
+
+    @if ($siteSettings['home.principal.visible'])
+        <section class="principal-section section" aria-labelledby="principal-section-title">
+            <div class="container">
+                <article class="principal-card">
+                    <div class="principal-portrait">
+                        <span class="principal-portrait-frame" aria-hidden="true">
+                            @if ($siteSettings['home.principal.image'])
+                                <img class="principal-portrait-image" src="{{ $siteConfiguration->imageUrl($siteSettings['home.principal.image']) }}" alt="">
+                            @else
+                                <span class="teacher-placeholder-photo"><span class="teacher-placeholder-person"></span></span>
+                            @endif
+                        </span>
+                        @if ($siteSettings['home.principal.name'])
+                            <span class="principal-name-badge">
+                                <strong>{{ $siteSettings['home.principal.name'] }}</strong>
+                                <small>{{ $siteSettings['home.principal.position'] }}</small>
+                            </span>
+                        @endif
+                    </div>
+                    <div class="principal-welcome">
+                        <span class="teacher-card-label">SAMBUTAN KEPALA SEKOLAH</span>
+                        <h2 class="editorial-heading" id="principal-section-title">Selamat datang di <span>{{ $siteSettings['identity.school_name'] }}.</span></h2>
+                        <p class="principal-greeting">{{ $siteSettings['home.principal.greeting'] }}</p>
+                        <blockquote><p>{{ $siteSettings['home.principal.message'] }}</p></blockquote>
+                        <p class="principal-supporting-copy">{{ $siteSettings['home.principal.description'] }}</p>
+                        <a class="principal-about-link" href="{{ route('about') }}">Kenali sekolah kami <span aria-hidden="true">→</span></a>
                     </div>
                 </article>
-            @endforeach
-        </div>
+            </div>
+        </section>
+    @endif
 
-        <a class="educator-all-link" href="{{ route('teachers') }}">
-            Lihat semua tenaga pendidik <span aria-hidden="true">→</span>
-        </a>
-    </div>
-</section>
-
-{{-- BERITA SEKOLAH --}}
-<section class="news-section section">
-    <div class="container">
-
-        <div class="news-section-heading">
-            <span class="news-section-label">BERITA SEKOLAH</span>
-            <h2 id="latest-news-heading">Berita Terbaru</h2>
-            <p>Informasi terkini seputar kegiatan dan prestasi di SMK Islamiyah Ciputat.</p>
-        </div>
-
-        <div class="news-grid">
-            <section class="news-latest" aria-labelledby="latest-news-heading">
-                <article class="news-featured-item">
-                    <img
-                        class="news-featured-image"
-                        src="https://images.unsplash.com/photo-1523580846011-d3a5bc25702b?auto=format&amp;fit=crop&amp;w=600&amp;q=80"
-                        alt="Suasana kegiatan belajar siswa di sekolah"
-                        loading="lazy"
-                    >
-                    <div class="news-featured-content">
-                        <time class="news-item-date" datetime="2026-10-28">28 Oktober 2026</time>
-                        <h4>Gelar kreativitas siswa menampilkan karya terbaik</h4>
-                        <p>Siswa berbagi karya dan pengalaman dalam kegiatan kreatif di lingkungan sekolah.</p>
-                    </div>
-                </article>
-                <div class="news-carousel">
-                    <div class="news-latest-list" data-news-track tabindex="0" aria-label="Daftar berita terbaru">
-                        <article class="news-item news-carousel-item">
-                        <img
-                            class="news-item-image"
-                            src="https://images.unsplash.com/photo-1498243691581-b145c3f54a5a?auto=format&amp;fit=crop&amp;w=360&amp;q=80"
-                            alt="Siswa belajar di ruang kelas"
-                            loading="lazy"
-                        >
-                        <div class="news-item-content">
-                            <time class="news-item-date" datetime="2026-10-18">18 Oktober 2026</time>
-                            <h4>Siswa mengikuti kegiatan belajar dan diskusi bersama</h4>
-                            <p>Kegiatan kelas mendorong siswa untuk aktif bertukar gagasan dan bekerja sama.</p>
-                        </div>
-                        </article>
-
-                        <article class="news-item news-carousel-item">
-                        <img
-                            class="news-item-image"
-                            src="https://images.unsplash.com/photo-1529390079861-591de354faf5?auto=format&amp;fit=crop&amp;w=360&amp;q=80"
-                            alt="Siswa beraktivitas bersama di sekolah"
-                            loading="lazy"
-                        >
-                        <div class="news-item-content">
-                            <time class="news-item-date" datetime="2026-10-10">10 Oktober 2026</time>
-                            <h4>Kegiatan bersama membangun semangat dan kerja tim</h4>
-                            <p>Siswa berpartisipasi dalam aktivitas yang mengasah kekompakan dan kepedulian.</p>
-                        </div>
-                        </article>
-
-                        <article class="news-item news-carousel-item">
-                        <img
-                            class="news-item-image"
-                            src="https://images.unsplash.com/photo-1524178232363-1fb2b075b655?auto=format&amp;fit=crop&amp;w=360&amp;q=80"
-                            alt="Guru menyampaikan materi di kelas"
-                            loading="lazy"
-                        >
-                        <div class="news-item-content">
-                            <time class="news-item-date" datetime="2026-09-21">21 September 2026</time>
-                            <h4>Suasana pembelajaran aktif di kelas</h4>
-                            <p>Guru dan siswa berkolaborasi dalam suasana belajar yang interaktif.</p>
-                        </div>
-                        </article>
-
-                        <article class="news-item news-carousel-item">
-                        <img
-                            class="news-item-image"
-                            src="https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?auto=format&amp;fit=crop&amp;w=360&amp;q=80"
-                            alt="Suasana kegiatan belajar bersama"
-                            loading="lazy"
-                        >
-                        <div class="news-item-content">
-                            <time class="news-item-date" datetime="2026-09-03">3 September 2026</time>
-                            <h4>Belajar bersama untuk memperkuat pemahaman materi</h4>
-                            <p>Diskusi kelompok membantu siswa saling berbagi cara dan pengalaman belajar.</p>
-                        </div>
-                        </article>
-
-                        <article class="news-item news-carousel-item">
-                        <img
-                            class="news-item-image"
-                            src="https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&amp;fit=crop&amp;w=360&amp;q=80"
-                            alt="Buku dan perlengkapan untuk kegiatan literasi"
-                            loading="lazy"
-                        >
-                        <div class="news-item-content">
-                            <time class="news-item-date" datetime="2026-08-28">28 Agustus 2026</time>
-                            <h4>Menghidupkan kebiasaan membaca di lingkungan sekolah</h4>
-                            <p>Kegiatan literasi mengajak siswa menjadikan membaca bagian dari keseharian.</p>
-                        </div>
-                        </article>
-
-                        <article class="news-item news-carousel-item">
-                        <img
-                            class="news-item-image"
-                            src="https://images.unsplash.com/photo-1529390079861-591de354faf5?auto=format&amp;fit=crop&amp;w=360&amp;q=80"
-                            alt="Siswa mengikuti kegiatan pendidikan"
-                            loading="lazy"
-                        >
-                        <div class="news-item-content">
-                            <time class="news-item-date" datetime="2026-08-10">10 Agustus 2026</time>
-                            <h4>Mengenal lingkungan sekolah melalui kegiatan orientasi</h4>
-                            <p>Siswa baru berkenalan dengan lingkungan belajar dan warga sekolah.</p>
-                        </div>
-                        </article>
-                    </div>
-
-                    <div class="news-carousel-controls" aria-label="Navigasi carousel berita">
-                        <div class="news-carousel-pages" data-news-pages aria-label="Halaman berita"></div>
-                        <div class="news-carousel-arrows">
-                            <button type="button" class="news-carousel-button" data-news-scroll="left" aria-label="Geser berita ke kiri" disabled>
-                                <span aria-hidden="true">←</span>
-                            </button>
-                            <button type="button" class="news-carousel-button" data-news-scroll="right" aria-label="Geser berita ke kanan">
-                                <span aria-hidden="true">→</span>
-                            </button>
-                        </div>
+    @if ($siteSettings['home.teachers.visible'])
+        <section class="teacher-section educator-lanyard-section" aria-labelledby="teacher-section-title">
+            <div class="container educator-lanyard-inner">
+                <div class="educator-lanyard-copy">
+                    <h2 class="educator-lanyard-headline" id="teacher-section-title">Para pendidik yang mendampingi perjalanan belajar siswa.</h2>
+                    <div class="educator-lanyard-details">
+                        <p class="educator-lanyard-description">Kenali guru dan tenaga kependidikan yang membimbing siswa dari kelas sampai dunia kerja.</p>
+                        <a class="educator-lanyard-cta" href="{{ route('teachers') }}">Lihat semua tenaga pendidik</a>
                     </div>
                 </div>
-            </section>
-
-            <div class="news-sidebar">
-                <div class="news-list">
-                    <h3 class="news-group-heading">Berita Lama</h3>
-
-                    <article class="news-archive-featured">
-                        <img
-                            class="news-item-image"
-                            src="https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&amp;fit=crop&amp;w=360&amp;q=80"
-                            alt="Ruang belajar di sekolah"
-                            loading="lazy"
-                        >
-                        <div class="news-item-content">
-                            <time class="news-item-date" datetime="2026-08-17">17 Agustus 2026</time>
-                            <h4>Kebersamaan warga sekolah dalam peringatan kemerdekaan</h4>
+                <div class="educator-lanyard-grid" aria-label="Kartu identitas tenaga pendidik">
+                    @forelse ($teachers as $teacher)
+                        <x-teacher-id-card
+                            :teacher="$teacher"
+                            :school-name="$siteSettings['identity.school_name']"
+                            :photo-url="$siteConfiguration->imageUrl($teacher->image_path)"
+                            :featured="$loop->first"
+                            context="home"
+                        />
+                    @empty
+                        <div class="educator-lanyard-empty" role="status">
+                            <p>Informasi tenaga pendidik akan segera diperbarui.</p>
                         </div>
-                    </article>
-
-                    <article class="news-item news-archive-item">
-                        <div class="news-item-content">
-                            <time class="news-item-date" datetime="2026-06-15">15 Juni 2026</time>
-                            <h4>Hasil praktik keahlian siswa hadir dalam pameran karya</h4>
-                        </div>
-                    </article>
-
-                    <article class="news-item news-archive-item">
-                        <div class="news-item-content">
-                            <time class="news-item-date" datetime="2026-04-20">20 April 2026</time>
-                            <h4>Menumbuhkan budaya membaca melalui kegiatan literasi</h4>
-                        </div>
-                    </article>
-                </div>
-
-                <h4 class="news-video-heading">Video Sekolah</h4>
-                <div class="news-video-player">
-                    <div class="news-video-track" data-video-track tabindex="0" aria-label="Video sekolah">
-                        <article class="news-video-slide">
-                            <iframe
-                                src="https://www.youtube-nocookie.com/embed/sYGenhpU1RM?autoplay=1&amp;mute=1&amp;playsinline=1&amp;controls=1&amp;loop=1&amp;playlist=sYGenhpU1RM&amp;rel=0"
-                                title="Video sekolah 1"
-                                allow="autoplay; accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                                referrerpolicy="strict-origin-when-cross-origin"
-                                allowfullscreen
-                            ></iframe>
-                        </article>
-                        <article class="news-video-slide">
-                            <iframe
-                                src="https://www.youtube-nocookie.com/embed/wr0fisFw0fc?autoplay=1&amp;mute=1&amp;playsinline=1&amp;controls=1&amp;loop=1&amp;playlist=wr0fisFw0fc&amp;rel=0"
-                                title="Video sekolah 2"
-                                allow="autoplay; accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                                referrerpolicy="strict-origin-when-cross-origin"
-                                allowfullscreen
-                            ></iframe>
-                        </article>
-                    </div>
-                    <div class="news-video-controls" aria-label="Navigasi video sekolah">
-                        <button type="button" class="news-carousel-button" data-video-scroll="left" aria-label="Video sebelumnya" disabled>
-                            <span aria-hidden="true">←</span>
-                        </button>
-                        <button type="button" class="news-carousel-button" data-video-scroll="right" aria-label="Video berikutnya">
-                            <span aria-hidden="true">→</span>
-                        </button>
-                    </div>
+                    @endforelse
                 </div>
             </div>
-        </div>
-    </div>
-</section>
+        </section>
+    @endif
 
-<section class="bkk-section section">
-    <div class="container bkk-inner">
-        <div class="bkk-copy">
-            <span class="section-label">Bursa Kerja Khusus</span>
-            <h2 class="editorial-heading">
-                Jembatan menuju
-                karier dan peluang kerja.
-            </h2>
-            <p>
-                Lihat informasi lowongan pekerjaan dan tracer study melalui layanan BKK SMK Islamiyah Ciputat.
-            </p>
-
-            <div class="bkk-links">
-                <a href="{{ route('bkk.jobs') }}">
-                    <span class="bkk-link-icon" aria-hidden="true">
-                        <svg viewBox="0 0 24 24" fill="none">
-                            <rect x="4" y="7" width="16" height="13" rx="2" stroke="currentColor" stroke-width="1.8"/>
-                            <path d="M9 7V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V7M4 12h16M10 12v2h4v-2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
-                    </span>
-                    <span class="bkk-link-copy">
-                        <strong>Lowongan pekerjaan</strong>
-                        <small>Lowongan terbaru dari perusahaan mitra</small>
-                    </span>
-                    <span class="bkk-link-arrow" aria-hidden="true">›</span>
-                </a>
-                <a href="{{ route('bkk.tracer-study') }}">
-                    <span class="bkk-link-icon" aria-hidden="true">
-                        <svg viewBox="0 0 24 24" fill="none">
-                            <path d="M5 19V11M10 19V5M15 19v-6M20 19V9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                        </svg>
-                    </span>
-                    <span class="bkk-link-copy">
-                        <strong>Tracer study</strong>
-                        <small>Data alumni setelah lulus dari sekolah</small>
-                    </span>
-                    <span class="bkk-link-arrow" aria-hidden="true">›</span>
-                </a>
+    @if ($siteSettings['home.news.visible'])
+        <section class="news-section section">
+            <div class="container">
+                <div class="news-section-heading">
+                    <span class="news-section-label">BERITA SEKOLAH</span>
+                    <h2 id="latest-news-heading">{{ $siteSettings['home.news.heading'] }}</h2>
+                    <p>{{ $siteSettings['home.news.description'] }}</p>
+                    <a href="{{ route('news.index') }}">Semua berita <span aria-hidden="true">→</span></a>
+                </div>
+                @if ($featuredNews || $carouselNews->isNotEmpty() || $archiveNews->isNotEmpty())
+                    <div class="news-grid">
+                        <section class="news-latest" aria-labelledby="latest-news-heading">
+                            @if ($featuredNews)
+                                <article class="news-featured-item">
+                                    @if ($featuredNews->image_path)
+                                        <img class="news-featured-image" src="{{ $siteConfiguration->imageUrl($featuredNews->image_path) }}" alt="Foto {{ $featuredNews->title }}" loading="lazy">
+                                    @endif
+                                    <div class="news-featured-content">
+                                        @if ($featuredNews->published_at)
+                                            <time class="news-item-date" datetime="{{ $featuredNews->published_at->toDateString() }}">{{ $featuredNews->published_at->format('d/m/Y') }}</time>
+                                        @endif
+                                        <h4><a href="{{ route('news.show', $featuredNews->slug) }}">{{ $featuredNews->title }}</a></h4>
+                                        @if ($featuredNews->summary)
+                                            <p>{{ $featuredNews->summary }}</p>
+                                        @endif
+                                    </div>
+                                </article>
+                            @endif
+                            @if ($carouselNews->isNotEmpty())
+                                <div class="news-carousel">
+                                    <div class="news-latest-list" data-news-track tabindex="0" aria-label="Daftar berita terbaru">
+                                        @foreach ($carouselNews as $article)
+                                            <article class="news-item news-carousel-item">
+                                                @if ($article->image_path)
+                                                    <img class="news-item-image" src="{{ $siteConfiguration->imageUrl($article->image_path) }}" alt="Foto {{ $article->title }}" loading="lazy">
+                                                @endif
+                                                <div class="news-item-content">
+                                                    @if ($article->published_at)
+                                                        <time class="news-item-date" datetime="{{ $article->published_at->toDateString() }}">{{ $article->published_at->format('d/m/Y') }}</time>
+                                                    @endif
+                                                    <h4><a href="{{ route('news.show', $article->slug) }}">{{ $article->title }}</a></h4>
+                                                    @if ($article->summary)
+                                                        <p>{{ $article->summary }}</p>
+                                                    @endif
+                                                </div>
+                                            </article>
+                                        @endforeach
+                                    </div>
+                                    <div class="news-carousel-controls" aria-label="Navigasi carousel berita">
+                                        <div class="news-carousel-pages" data-news-pages aria-label="Halaman berita"></div>
+                                        <div class="news-carousel-arrows">
+                                            <button type="button" class="news-carousel-button" data-news-scroll="left" aria-label="Geser berita ke kiri" disabled><span aria-hidden="true">←</span></button>
+                                            <button type="button" class="news-carousel-button" data-news-scroll="right" aria-label="Geser berita ke kanan"><span aria-hidden="true">→</span></button>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
+                        </section>
+                        @if ($archiveNews->isNotEmpty() || $siteSettings['home.news.video_1'] || $siteSettings['home.news.video_2'])
+                            <aside class="news-sidebar">
+                                @if ($archiveNews->isNotEmpty())
+                                    <div class="news-list">
+                                        <h3 class="news-group-heading">Berita Lama</h3>
+                                        @foreach ($archiveNews as $article)
+                                            <article class="{{ $loop->first ? 'news-archive-featured' : 'news-item news-archive-item' }}">
+                                                @if ($loop->first && $article->image_path)
+                                                    <img class="news-item-image" src="{{ $siteConfiguration->imageUrl($article->image_path) }}" alt="Foto {{ $article->title }}" loading="lazy">
+                                                @endif
+                                                <div class="news-item-content">
+                                                    @if ($article->published_at)
+                                                        <time class="news-item-date" datetime="{{ $article->published_at->toDateString() }}">{{ $article->published_at->format('d/m/Y') }}</time>
+                                                    @endif
+                                                    <h4><a href="{{ route('news.show', $article->slug) }}">{{ $article->title }}</a></h4>
+                                                </div>
+                                            </article>
+                                        @endforeach
+                                    </div>
+                                @endif
+                                @php
+                                    $videoIds = array_filter([$siteSettings['home.news.video_1'], $siteSettings['home.news.video_2']]);
+                                @endphp
+                                @if ($videoIds)
+                                    <h4 class="news-video-heading">Video Sekolah</h4>
+                                    <div class="news-video-player">
+                                        <div class="news-video-track" data-video-track tabindex="0" aria-label="Video sekolah">
+                                            @foreach ($videoIds as $videoId)
+                                                <article class="news-video-slide">
+                                                    <iframe src="https://www.youtube-nocookie.com/embed/{{ $videoId }}?playsinline=1&amp;controls=1&amp;rel=0" title="Video sekolah {{ $loop->iteration }}" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+                                                </article>
+                                            @endforeach
+                                        </div>
+                                        @if (count($videoIds) > 1)
+                                            <div class="news-video-controls" aria-label="Navigasi video sekolah">
+                                                <button type="button" class="news-carousel-button" data-video-scroll="left" aria-label="Video sebelumnya" disabled><span aria-hidden="true">←</span></button>
+                                                <button type="button" class="news-carousel-button" data-video-scroll="right" aria-label="Video berikutnya"><span aria-hidden="true">→</span></button>
+                                            </div>
+                                        @endif
+                                    </div>
+                                @endif
+                            </aside>
+                        @endif
+                    </div>
+                @else
+                    <p class="program-hint">Belum ada berita yang dipublikasikan.</p>
+                @endif
             </div>
-        </div>
+        </section>
+    @endif
 
-        <div class="bkk-visual">
-            <span class="bkk-image-accent" aria-hidden="true"></span>
-            <span class="bkk-image-outline" aria-hidden="true"></span>
-            <div class="bkk-image-wrap">
-                <img
-                    src="https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=1200&q=85"
-                    alt="Suasana kegiatan belajar di kelas"
-                    loading="lazy"
-                >
+    @if ($siteSettings['home.bkk.visible'])
+        <section class="bkk-section section">
+            <div class="container bkk-inner">
+                <div class="bkk-copy">
+                    <span class="section-label">Bursa Kerja Khusus</span>
+                    <h2 class="editorial-heading">{{ $siteSettings['home.bkk.heading'] }}</h2>
+                    <p>{{ $siteSettings['home.bkk.description'] }}</p>
+                    <div class="bkk-links">
+                        <a href="{{ route('bkk.jobs') }}">
+                            <span class="bkk-link-icon" aria-hidden="true"><i data-lucide="briefcase-business"></i></span>
+                            <span class="bkk-link-copy"><strong>Lowongan pekerjaan</strong><small>Informasi lowongan pekerjaan</small></span>
+                            <span class="bkk-link-arrow" aria-hidden="true">›</span>
+                        </a>
+                        <a href="{{ route('bkk.tracer-study') }}">
+                            <span class="bkk-link-icon" aria-hidden="true"><i data-lucide="chart-no-axes-column-increasing"></i></span>
+                            <span class="bkk-link-copy"><strong>Tracer study</strong><small>Informasi alumni setelah lulus</small></span>
+                            <span class="bkk-link-arrow" aria-hidden="true">›</span>
+                        </a>
+                    </div>
+                </div>
+                @if ($siteSettings['home.bkk.image'])
+                    <div class="bkk-visual">
+                        <span class="bkk-image-accent" aria-hidden="true"></span>
+                        <span class="bkk-image-outline" aria-hidden="true"></span>
+                        <div class="bkk-image-wrap">
+                            <img src="{{ $siteConfiguration->imageUrl($siteSettings['home.bkk.image']) }}" alt="Kegiatan belajar di sekolah" loading="lazy">
+                        </div>
+                        <div class="bkk-image-badge"><strong>2 layanan</strong><span>Informasi BKK untuk alumni</span></div>
+                    </div>
+                @endif
             </div>
-            <div class="bkk-image-badge">
-                <strong>2 layanan</strong>
-                <span>Lowongan dan tracer study di satu tempat</span>
+        </section>
+    @endif
+
+    @if ($siteSettings['home.admissions.visible'])
+        @php
+            $admissionSteps = collect(preg_split('/\r\n|\r|\n/', $siteSettings['home.admissions.steps']))
+                ->filter(fn (string $step): bool => trim($step) !== '')
+                ->values();
+        @endphp
+        <section class="admission-section" aria-labelledby="admission-title">
+            <div class="container admission-inner">
+                <div class="admission-copy">
+                    <span class="section-label">SPMB tahun ajaran {{ $siteSettings['home.admissions.year'] }}</span>
+                    <h2 id="admission-title">{{ $siteSettings['home.admissions.heading'] }}</h2>
+                    <p>{{ $siteSettings['home.admissions.description'] }}</p>
+                    <a href="{{ route('spmb') }}" class="button-light">Lihat informasi SPMB</a>
+                </div>
+                @if ($admissionSteps->isNotEmpty())
+                    <ol class="admission-steps" aria-label="Langkah pendaftaran SPMB">
+                        @foreach ($admissionSteps as $step)
+                            @php
+                                $stepParts = array_pad(explode('|', $step, 2), 2, '');
+                            @endphp
+                            <li class="admission-step">
+                                <span class="admission-step__number">{{ $loop->iteration }}</span>
+                                <span class="admission-step__content">
+                                    <span class="admission-step__label">{{ trim($stepParts[0]) }}</span>
+                                    @if (trim($stepParts[1]) !== '')
+                                        <span class="admission-step__description">{{ trim($stepParts[1]) }}</span>
+                                    @endif
+                                </span>
+                            </li>
+                        @endforeach
+                    </ol>
+                @endif
             </div>
-        </div>
-    </div>
-</section>
-
-{{-- SPMB --}}
-<section class="admission-section" aria-labelledby="admission-title">
-    <div class="container admission-inner">
-
-        <div class="admission-copy">
-            <span class="section-label">SPMB tahun ajaran 2027/2028</span>
-
-            <h2 id="admission-title">
-                Mulai langkah
-                <span>masa depanmu.</span>
-            </h2>
-
-            <p>
-                Lima langkah mudah untuk jadi siswa baru.
-            </p>
-
-            <a href="{{ route('spmb') }}" class="button-light">
-                Lihat informasi SPMB
-            </a>
-        </div>
-
-        <ol class="admission-steps" aria-label="Lima langkah pendaftaran SPMB">
-            <li class="admission-step">
-                <span class="admission-step__number">1</span>
-                <span class="admission-step__content">
-                    <span class="admission-step__label">Isi formulir</span>
-                    <span class="admission-step__description">Lengkapi data diri</span>
-                </span>
-            </li>
-            <li class="admission-step">
-                <span class="admission-step__number">2</span>
-                <span class="admission-step__content">
-                    <span class="admission-step__label">Kirim berkas</span>
-                    <span class="admission-step__description">Unggah dokumen</span>
-                </span>
-            </li>
-            <li class="admission-step">
-                <span class="admission-step__number">3</span>
-                <span class="admission-step__content">
-                    <span class="admission-step__label">Ikut seleksi</span>
-                    <span class="admission-step__description">Ikuti jadwal tes</span>
-                </span>
-            </li>
-            <li class="admission-step">
-                <span class="admission-step__number">4</span>
-                <span class="admission-step__content">
-                    <span class="admission-step__label">Lihat hasil</span>
-                    <span class="admission-step__description">Cek pengumuman</span>
-                </span>
-            </li>
-            <li class="admission-step">
-                <span class="admission-step__number">5</span>
-                <span class="admission-step__content">
-                    <span class="admission-step__label">Daftar ulang</span>
-                    <span class="admission-step__description">Konfirmasi tempatmu</span>
-                </span>
-                <span class="admission-flag" aria-hidden="true"></span>
-            </li>
-        </ol>
-
-    </div>
-</section>
-
+        </section>
+    @endif
 @endsection

@@ -1,23 +1,22 @@
+@php($logoUrl = $siteConfiguration->imageUrl($siteSettings['identity.logo']))
 <footer class="site-footer">
     <div class="container">
-
         <div class="footer-main">
-
             <div class="footer-brand">
                 <a href="{{ route('home') }}" class="brand">
-                    <img class="brand-logo" src="{{ asset('images/logo/logo.PNG') }}" alt="Logo SMK Islamiyah Ciputat">
+                    @if ($logoUrl)
+                        <img class="brand-logo" src="{{ $logoUrl }}" alt="Logo {{ $siteSettings['identity.school_name'] }}">
+                    @else
+                        <span class="brand-symbol" aria-hidden="true">SMK</span>
+                    @endif
 
                     <span class="brand-text">
-                        <strong>SMK ISLAMIYAH</strong>
-                        <small>CIPUTAT · TANGERANG SELATAN</small>
+                        <strong>{{ mb_strtoupper($siteSettings['identity.school_name']) }}</strong>
+                        <small>{{ mb_strtoupper($siteSettings['identity.location']) }}</small>
                     </span>
                 </a>
 
-                <p>
-                    Website resmi SMK Islamiyah Ciputat sebagai pusat
-                    informasi sekolah, program keahlian, kegiatan,
-                    dan penerimaan peserta didik baru.
-                </p>
+                <p>{{ $siteSettings['footer.description'] }}</p>
             </div>
 
             <div class="footer-column">
@@ -26,16 +25,15 @@
                 <a href="{{ route('about') }}">Tentang Kami</a>
                 <a href="{{ route('teachers') }}">Tenaga Kependidikan</a>
                 <a href="{{ route('spmb') }}">SPMB</a>
+                <a href="{{ route('news.index') }}">Berita</a>
+                <a href="{{ route('gallery') }}">Galeri</a>
             </div>
 
             <div class="footer-column">
                 <h4>Program Keahlian</h4>
-                <a href="{{ route('program.kuliner') }}">Kuliner</a>
-                <a href="{{ route('program.dkv') }}">DKV</a>
-                <a href="{{ route('program.tkj') }}">TKJ</a>
-                <a href="{{ route('program.ak') }}">Akuntansi</a>
-                <a href="{{ route('program.mp') }}">Manajemen Perkantoran</a>
-                <a href="{{ route('program.bd') }}">Bisnis Digital</a>
+                @foreach ($navigationPrograms as $program)
+                    <a href="{{ route('program.show', $program->slug) }}">{{ $program->title }}</a>
+                @endforeach
             </div>
 
             <div class="footer-column">
@@ -43,15 +41,27 @@
                 <a href="{{ route('bkk.jobs') }}">Lowongan Pekerjaan</a>
                 <a href="{{ route('bkk.tracer-study') }}">Tracer Study</a>
                 <h4>Informasi Sekolah</h4>
-                <p>Ciputat, Tangerang Selatan</p>
+                @if ($siteSettings['identity.address'])
+                    <p>{{ $siteSettings['identity.address'] }}</p>
+                @endif
+                <p>{{ $siteSettings['identity.location'] }}</p>
+                @if ($siteSettings['identity.whatsapp'])
+                    <a href="https://wa.me/{{ preg_replace('/\D+/', '', $siteSettings['identity.whatsapp']) }}">WhatsApp sekolah</a>
+                @endif
+                @if ($siteSettings['identity.email'])
+                    <a href="mailto:{{ $siteSettings['identity.email'] }}">{{ $siteSettings['identity.email'] }}</a>
+                @endif
+                @foreach (['instagram' => 'Instagram', 'facebook' => 'Facebook', 'youtube' => 'YouTube'] as $socialKey => $socialLabel)
+                    @if ($siteSettings['identity.'.$socialKey])
+                        <a href="{{ $siteSettings['identity.'.$socialKey] }}" target="_blank" rel="noopener">{{ $socialLabel }}</a>
+                    @endif
+                @endforeach
             </div>
-
         </div>
 
         <div class="footer-bottom">
-            <span>© {{ date('Y') }} SMK Islamiyah Ciputat.</span>
-            <span>Website Informasi Sekolah</span>
+            <span>© {{ date('Y') }} {{ $siteSettings['identity.school_name'] }}.</span>
+            <span>{{ $siteSettings['identity.copyright'] }}</span>
         </div>
-
     </div>
 </footer>

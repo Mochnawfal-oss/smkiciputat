@@ -114,6 +114,28 @@ return [
             // 'trust_server_certificate' => env('DB_TRUST_SERVER_CERTIFICATE', 'false'),
         ],
 
+        'teachers' => [
+            'driver' => env('TEACHERS_DB_CONNECTION', 'sqlite'),
+            'url' => env('TEACHERS_DB_URL', env('DB_URL')),
+            'database' => env('TEACHERS_DB_DATABASE', env('DB_DATABASE', database_path('teachers.sqlite'))),
+            'host' => env('TEACHERS_DB_HOST', env('DB_HOST', '127.0.0.1')),
+            'port' => env('TEACHERS_DB_PORT', env('DB_PORT', '3306')),
+            'username' => env('TEACHERS_DB_USERNAME', env('DB_USERNAME', 'root')),
+            'password' => env('TEACHERS_DB_PASSWORD', env('DB_PASSWORD', '')),
+            'unix_socket' => env('TEACHERS_DB_SOCKET', env('DB_SOCKET', '')),
+            'charset' => env('TEACHERS_DB_CHARSET', env('DB_CHARSET', 'utf8mb4')),
+            'collation' => env('TEACHERS_DB_COLLATION', env('DB_COLLATION', 'utf8mb4_unicode_ci')),
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'foreign_key_constraints' => env('TEACHERS_DB_FOREIGN_KEYS', true),
+            'strict' => true,
+            'engine' => null,
+            'busy_timeout' => null,
+            'journal_mode' => null,
+            'synchronous' => null,
+            'transaction_mode' => 'DEFERRED',
+        ],
+
     ],
 
     /*

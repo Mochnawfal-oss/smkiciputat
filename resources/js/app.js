@@ -2,6 +2,7 @@ import { createIcons, Menu, ChevronDown, ArrowUpRight, ArrowRight, GraduationCap
 
 import AOS from 'aos';
 import 'aos/dist/aos.css';
+import './media-manager.js';
 
 document.addEventListener('DOMContentLoaded', () => {
         createIcons({
@@ -97,17 +98,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const teacherCards = [...document.querySelectorAll('.teacher-card')];
 
+    const syncTeacherScrollLock = () => {
+        const openModal = teacherCards.some((card) => card.classList.contains('is-open') && card.classList.contains('educator-card'));
+        document.body.classList.toggle('teacher-modal-open', openModal);
+    };
+
     const setTeacherCardOpen = (activeCard, isOpen) => {
         teacherCards.forEach((card) => {
             const cardIsOpen = isOpen && card === activeCard;
             const trigger = card.querySelector('.teacher-card-trigger');
             const details = card.querySelector('.teacher-card-details');
 
+            if (!trigger || !details) return;
+
             card.classList.toggle('is-open', cardIsOpen);
             trigger.setAttribute('aria-expanded', String(cardIsOpen));
             details.setAttribute('aria-hidden', String(!cardIsOpen));
             details.inert = !cardIsOpen;
         });
+        syncTeacherScrollLock();
     };
 
     teacherCards.forEach((card) => {
@@ -162,7 +171,21 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         trigger.addEventListener('click', (event) => {
-            if (isEducatorCard || event.detail === 0 || event.pointerType === 'touch') {
+            if (isEducatorCard) {
+                event.preventDefault();
+                const willOpen = trigger.getAttribute('aria-expanded') !== 'true';
+
+                setTeacherCardOpen(card, willOpen);
+
+                if (willOpen) {
+                    window.setTimeout(() => closeButton?.focus(), 0);
+                } else {
+                    trigger.focus();
+                }
+
+                return;
+            }
+            if (event.detail === 0 || event.pointerType === 'touch') {
                 setTeacherCardOpen(card, trigger.getAttribute('aria-expanded') !== 'true');
             } else {
                 setTeacherCardOpen(card, true);
@@ -171,8 +194,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (isEducatorCard) {
             document.addEventListener('click', (event) => {
-                if (event.target instanceof Node && card.classList.contains('is-open') && !card.contains(event.target)) {
+                if (!(event.target instanceof Node) || !card.classList.contains('is-open')) return;
+                const panel = card.querySelector('.teacher-card-details');
+                if (!panel) return;
+                if (!panel.contains(event.target) && !trigger.contains(event.target)) {
                     setTeacherCardOpen(card, false);
+                    trigger.focus();
                 }
             });
         }
@@ -185,6 +212,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 skipNextFocusOpen = false;
             }
         });
+    });
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key !== 'Escape') {
+            return;
+        }
+
+        const openEducatorCard = teacherCards.find((card) => (
+            card.classList.contains('educator-card') && card.classList.contains('is-open')
+        ));
+
+        if (openEducatorCard) {
+            setTeacherCardOpen(openEducatorCard, false);
+            openEducatorCard.querySelector('.teacher-card-trigger')?.focus();
+        }
     });
 
     const newsCarousel = document.querySelector('[data-news-track]');
@@ -333,75 +375,96 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (!menuToggle || !navMenu) return;
 
+    const closeAllDropdowns = () => {
+        dropdowns.forEach((dropdown) => {
+            dropdown.classList.remove('open');
+            dropdown.querySelector('.dropdown-toggle')
+                ?.setAttribute('aria-expanded', 'false');
+        });
+    };
+
+    const closeMobileMenu = () => {
+        navMenu.classList.remove('open');
+        menuToggle.classList.remove('active');
+        menuToggle.setAttribute('aria-expanded', 'false');
+        document.body.classList.remove('menu-open');
+        closeAllDropdowns();
+    };
+
     // Buka dan tutup hamburger
     menuToggle.addEventListener('click', () => {
         const isOpen = navMenu.classList.toggle('open');
 
         menuToggle.classList.toggle('active', isOpen);
         menuToggle.setAttribute('aria-expanded', String(isOpen));
+        document.body.classList.toggle('menu-open', isOpen);
+
+        if (!isOpen) {
+            closeAllDropdowns();
+        }
     });
 
-    // Dropdown melalui klik
+    // Dropdown melalui klik (khusus mobile atau saat toggle dropdown diklik)
     dropdowns.forEach((dropdown) => {
         const toggle = dropdown.querySelector('.dropdown-toggle');
+        if (!toggle) return;
 
-        toggle.addEventListener('click', () => {
+        toggle.addEventListener('click', (event) => {
+            const isMobile = window.innerWidth <= 900;
+            const href = toggle.getAttribute('href') || '';
+            const isAnchorOnly = href === '#' || href === '' || href.startsWith('/#');
+
+            if (isMobile || isAnchorOnly) {
+                event.preventDefault();
+            }
+
             const willOpen = !dropdown.classList.contains('open');
 
             dropdowns.forEach((item) => {
-                item.classList.remove('open');
-                item.querySelector('.dropdown-toggle')
-                    .setAttribute('aria-expanded', 'false');
+                if (item !== dropdown) {
+                    item.classList.remove('open');
+                    item.querySelector('.dropdown-toggle')
+                        ?.setAttribute('aria-expanded', 'false');
+                }
             });
 
-            if (willOpen) {
-                dropdown.classList.add('open');
-                toggle.setAttribute('aria-expanded', 'true');
-            }
+            dropdown.classList.toggle('open', willOpen);
+            toggle.setAttribute('aria-expanded', String(willOpen));
         });
     });
 
     // Tutup ketika klik di luar navigasi
     document.addEventListener('click', (event) => {
         if (!event.target.closest('.nav-dropdown')) {
-            dropdowns.forEach((dropdown) => {
-                dropdown.classList.remove('open');
-                dropdown.querySelector('.dropdown-toggle')
-                    .setAttribute('aria-expanded', 'false');
-            });
+            closeAllDropdowns();
         }
 
         if (
             !event.target.closest('.nav-wrapper') &&
             navMenu.classList.contains('open')
         ) {
-            navMenu.classList.remove('open');
-            menuToggle.classList.remove('active');
-            menuToggle.setAttribute('aria-expanded', 'false');
+            closeMobileMenu();
         }
     });
 
     // Tutup dengan tombol Escape
     document.addEventListener('keydown', (event) => {
         if (event.key === 'Escape') {
-            dropdowns.forEach((dropdown) => {
-                dropdown.classList.remove('open');
-                dropdown.querySelector('.dropdown-toggle')
-                    .setAttribute('aria-expanded', 'false');
-            });
-
-            navMenu.classList.remove('open');
-            menuToggle.classList.remove('active');
-            menuToggle.setAttribute('aria-expanded', 'false');
+            closeMobileMenu();
         }
     });
 
-    // Tutup menu setelah memilih halaman
-    navMenu.querySelectorAll('.dropdown-menu a, a.nav-link').forEach((link) => {
+    // Tutup menu setelah memilih halaman tautan (bukan dropdown toggle)
+    navMenu.querySelectorAll('.dropdown-menu a, a.nav-link:not(.dropdown-toggle)').forEach((link) => {
         link.addEventListener('click', () => {
-            navMenu.classList.remove('open');
-            menuToggle.classList.remove('active');
-            menuToggle.setAttribute('aria-expanded', 'false');
+            closeMobileMenu();
         });
+    });
+
+    // Tutup mobile menu saat resize ke layar desktop
+    window.addEventListener('resize', () => {
+        if (window.innerWidth > 900 && navMenu.classList.contains('open')) {
+            closeMobileMenu();
+        }
     });
 });
