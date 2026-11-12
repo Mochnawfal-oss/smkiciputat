@@ -26,6 +26,7 @@
             <p class="admin-nav-caption">Konten Website</p>
             <a href="{{ route('admin.content.index', 'programs') }}" class="admin-nav-link {{ request()->route('type') === 'programs' ? 'is-active' : '' }}"><span aria-hidden="true">▦</span> Program Keahlian</a>
             <a href="{{ route('admin.teachers.index') }}" class="admin-nav-link {{ request()->routeIs('admin.teachers.*') ? 'is-active' : '' }}"><span aria-hidden="true">♙</span> Tenaga Kependidikan</a>
+            <a href="{{ route('admin.content.index', 'principal-welcomes') }}" class="admin-nav-link {{ request()->route('type') === 'principal-welcomes' ? 'is-active' : '' }}"><span aria-hidden="true">▤</span> Sambutan Kepala Sekolah</a>
             <a href="{{ route('admin.content.index', 'news') }}" class="admin-nav-link {{ request()->route('type') === 'news' ? 'is-active' : '' }}"><span aria-hidden="true">▤</span> Berita</a>
             <a href="{{ route('admin.content.index', 'jobs') }}" class="admin-nav-link {{ request()->route('type') === 'jobs' ? 'is-active' : '' }}"><span aria-hidden="true">▣</span> Lowongan BKK</a>
             <a href="{{ route('admin.content.index', 'gallery') }}" class="admin-nav-link {{ request()->route('type') === 'gallery' ? 'is-active' : '' }}"><span aria-hidden="true">▧</span> Galeri</a>

@@ -5,6 +5,8 @@ namespace Tests\Feature;
 use App\Models\Admin;
 use App\Models\ContentEntry;
 use App\Models\MediaAsset;
+use App\Models\NewsArticle;
+use App\Models\PrincipalWelcome;
 use App\Models\SiteSetting;
 use App\Models\Teacher;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -59,8 +61,7 @@ class CmsAdminTest extends TestCase
             ])
             ->assertRedirect(route('admin.content.index', 'programs'));
 
-        $this->assertDatabaseHas('content_entries', [
-            'type' => 'program',
+        $this->assertDatabaseHas('programs', [
             'slug' => 'program-uji',
             'status' => 'published',
         ]);
@@ -72,6 +73,411 @@ class CmsAdminTest extends TestCase
         $this->get(route('program.show', 'program-uji'))
             ->assertOk()
             ->assertSee('Deskripsi program uji.');
+    }
+
+    public function test_admin_can_publish_a_job_vacancy_to_the_dedicated_table(): void
+    {
+        $admin = $this->createAdmin();
+
+        $this->actingAs($admin, 'admin')
+            ->post(route('admin.content.store', 'jobs'), [
+                'title' => 'Staf Administrasi Uji',
+                'slug' => 'staf-administrasi-uji',
+                'summary' => 'Lowongan uji untuk memastikan penyimpanan BKK.',
+                'status' => 'published',
+                'metadata' => [
+                    'company' => 'Perusahaan Uji',
+                    'position' => 'Staf Administrasi',
+                ],
+            ])
+            ->assertRedirect(route('admin.content.index', 'jobs'));
+
+        $this->assertDatabaseHas('job_vacancies', [
+            'slug' => 'staf-administrasi-uji',
+            'status' => 'published',
+        ]);
+
+        $this->get(route('bkk.jobs'))
+            ->assertOk()
+            ->assertSee('Staf Administrasi')
+            ->assertSee('Perusahaan Uji');
+    }
+
+    public function test_admin_news_form_explains_homepage_placement_and_uses_automatic_by_default(): void
+    {
+        $admin = $this->createAdmin();
+
+        $this->actingAs($admin, 'admin')
+            ->get(route('admin.content.create', 'news'))
+            ->assertOk()
+            ->assertSee('Posisi tampil di beranda')
+            ->assertSee('Berita utama (1 slot)')
+            ->assertSee('Carousel berita (bisa digeser)')
+            ->assertSee('Kartu di bawah carousel')
+            ->assertSee('Daftar berita di sisi kanan')
+            ->assertSee('Otomatis (mengikuti urutan tanggal)')
+            ->assertSee('Hanya tampil di halaman berita')
+            ->assertSee('Slot berita utama hanya satu.')
+            ->assertSee('value="auto" selected', false)
+            ->assertDontSee('Tandai sebagai unggulan');
+    }
+
+    public function test_admin_selecting_a_main_news_article_replaces_the_existing_main_slot(): void
+    {
+        $admin = $this->createAdmin();
+        $previousMain = NewsArticle::query()->create([
+            'title' => 'Berita Utama Sebelumnya',
+            'slug' => 'berita-utama-sebelumnya',
+            'status' => 'published',
+            'metadata' => ['homepage_group' => 'featured'],
+        ]);
+
+        $this->actingAs($admin, 'admin')
+            ->post(route('admin.content.store', 'news'), [
+                'title' => 'Berita Utama Baru',
+                'slug' => 'berita-utama-baru',
+                'status' => 'published',
+                'metadata' => ['homepage_group' => 'featured'],
+            ])
+            ->assertRedirect(route('admin.content.index', 'news'));
+
+        $newMain = NewsArticle::query()->where('slug', 'berita-utama-baru')->firstOrFail();
+        $this->assertSame('featured', $newMain->metadata['homepage_group']);
+        $this->assertSame('auto', $previousMain->fresh()->metadata['homepage_group']);
+        $this->assertDatabaseHas('content_activities', [
+            'content_type' => 'news',
+            'content_id' => $previousMain->id,
+            'action' => 'updated',
+        ]);
+
+        $this->actingAs($admin, 'admin')
+            ->get(route('admin.content.index', 'news'))
+            ->assertOk()
+            ->assertSee('Berita utama (1 slot)')
+            ->assertSee('Otomatis (mengikuti urutan tanggal)');
+
+        $homepageContent = $this->get(route('home'))
+            ->assertOk()
+            ->assertSee('Berita Utama Baru')
+            ->assertSee('Berita Utama Sebelumnya')
+            ->getContent() ?? '';
+
+        $this->assertSame(1, substr_count($homepageContent, 'data-news-featured-slide'));
+    }
+
+    public function test_admin_promoting_an_existing_article_replaces_the_current_main(): void
+    {
+        $admin = $this->createAdmin();
+        $previousMain = NewsArticle::query()->create([
+            'title' => 'Berita Utama Lama',
+            'slug' => 'berita-utama-lama',
+            'status' => 'published',
+            'metadata' => ['homepage_group' => 'featured'],
+        ]);
+        $article = NewsArticle::query()->create([
+            'title' => 'Artikel yang Dipromosikan',
+            'slug' => 'artikel-yang-dipromosikan',
+            'status' => 'published',
+            'metadata' => ['homepage_group' => 'auto'],
+        ]);
+
+        $this->actingAs($admin, 'admin')
+            ->put(route('admin.content.update', ['type' => 'news', 'entry' => $article]), [
+                'title' => $article->title,
+                'slug' => $article->slug,
+                'status' => 'published',
+                'metadata' => ['homepage_group' => 'featured'],
+            ])
+            ->assertRedirect(route('admin.content.index', 'news'));
+
+        $this->assertSame('featured', $article->fresh()->metadata['homepage_group']);
+        $this->assertSame('auto', $previousMain->fresh()->metadata['homepage_group']);
+    }
+
+    public function test_admin_saving_a_draft_as_main_does_not_replace_the_published_main(): void
+    {
+        $admin = $this->createAdmin();
+        $publishedMain = NewsArticle::query()->create([
+            'title' => 'Berita Utama Aktif',
+            'slug' => 'berita-utama-aktif',
+            'status' => 'published',
+            'metadata' => ['homepage_group' => 'featured'],
+        ]);
+
+        $this->actingAs($admin, 'admin')
+            ->post(route('admin.content.store', 'news'), [
+                'title' => 'Berita Utama Draft',
+                'slug' => 'berita-utama-draft',
+                'status' => 'draft',
+                'metadata' => ['homepage_group' => 'featured'],
+            ])
+            ->assertRedirect(route('admin.content.index', 'news'));
+
+        $this->assertSame('featured', $publishedMain->fresh()->metadata['homepage_group']);
+        $this->assertDatabaseHas('news_articles', [
+            'slug' => 'berita-utama-draft',
+            'status' => 'draft',
+        ]);
+
+        $this->get(route('admin.content.index', 'news'))
+            ->assertOk()
+            ->assertSee('Berita utama (1 slot) (Draft)');
+    }
+
+    public function test_admin_scheduling_a_main_news_article_keeps_the_current_main_until_its_date(): void
+    {
+        $this->freezeTime();
+        $admin = $this->createAdmin();
+        $publishedMain = NewsArticle::query()->create([
+            'title' => 'Berita Utama Saat Ini',
+            'slug' => 'berita-utama-saat-ini',
+            'status' => 'published',
+            'published_at' => now()->subDay(),
+            'metadata' => ['homepage_group' => 'featured'],
+        ]);
+        $scheduledAt = now()->addDay();
+
+        $this->actingAs($admin, 'admin')
+            ->post(route('admin.content.store', 'news'), [
+                'title' => 'Berita Utama Terjadwal',
+                'slug' => 'berita-utama-terjadwal',
+                'status' => 'published',
+                'published_at' => $scheduledAt->format('Y-m-d\TH:i'),
+                'metadata' => ['homepage_group' => 'featured'],
+            ])
+            ->assertRedirect(route('admin.content.index', 'news'));
+
+        $this->assertSame('featured', $publishedMain->fresh()->metadata['homepage_group']);
+        $this->assertDatabaseHas('news_articles', [
+            'slug' => 'berita-utama-terjadwal',
+            'status' => 'published',
+        ]);
+
+        $this->get(route('home'))
+            ->assertOk()
+            ->assertSee('Berita Utama Saat Ini')
+            ->assertDontSee('Berita Utama Terjadwal');
+
+        $this->get(route('admin.content.index', 'news'))
+            ->assertOk()
+            ->assertSee('Berita utama (1 slot) (Terjadwal)');
+    }
+
+    public function test_admin_rejects_an_unknown_homepage_placement(): void
+    {
+        $admin = $this->createAdmin();
+
+        $this->actingAs($admin, 'admin')
+            ->post(route('admin.content.store', 'news'), [
+                'title' => 'Berita Tanpa Posisi Valid',
+                'slug' => 'berita-tanpa-posisi-valid',
+                'status' => 'published',
+                'metadata' => ['homepage_group' => 'unknown'],
+            ])
+            ->assertSessionHasErrors('metadata.homepage_group');
+
+        $this->assertDatabaseMissing('news_articles', [
+            'slug' => 'berita-tanpa-posisi-valid',
+        ]);
+    }
+
+    public function test_admin_cannot_save_content_with_published_at_outside_mysql_timestamp_range(): void
+    {
+        $admin = $this->createAdmin();
+
+        $this->actingAs($admin, 'admin')
+            ->post(route('admin.content.store', 'principal-welcomes'), [
+                'title' => 'Sambutan Tahun 2026',
+                'status' => 'published',
+                'published_at' => '0026-12-12T12:11',
+            ])
+            ->assertSessionHasErrors('published_at');
+
+        $this->assertDatabaseMissing('principal_welcomes', [
+            'slug' => 'sambutan-tahun-2026',
+        ]);
+    }
+
+    public function test_admin_can_manage_principal_welcomes_separately_from_teachers(): void
+    {
+        Storage::fake('public');
+        $admin = $this->createAdmin();
+        $type = 'principal-welcomes';
+
+        $this->actingAs($admin, 'admin')
+            ->get(route('admin.content.index', $type))
+            ->assertOk()
+            ->assertSee(route('admin.content.index', $type));
+
+        $this->actingAs($admin, 'admin')
+            ->get(route('admin.content.create', $type))
+            ->assertOk()
+            ->assertSee('Judul sambutan')
+            ->assertSee('Jabatan')
+            ->assertSee('Salam pembuka')
+            ->assertSee('Status publikasi')
+            ->assertDontSee('Slug URL')
+            ->assertDontSee('Urutan tampil')
+            ->assertDontSee('Tanggal publikasi')
+            ->assertDontSee('Tandai sebagai unggulan')
+            ->assertDontSee('Pengaturan SEO');
+
+        PrincipalWelcome::query()->create([
+            'title' => 'Sambutan Sebelumnya',
+            'slug' => 'sambutan-sebelumnya-untuk-urutan',
+            'status' => 'draft',
+            'sort_order' => 7,
+            'metadata' => [],
+        ]);
+        $publishedAt = now()->startOfMinute();
+        $this->travelTo($publishedAt);
+
+        $this->actingAs($admin, 'admin')
+            ->post(route('admin.content.store', $type), [
+                'title' => 'Sambutan Kepala Sekolah 2026',
+                'category' => 'Kepala SMK Islamiyah Ciputat',
+                'summary' => 'Assalamu’alaikum warahmatullahi wabarakatuh.',
+                'body' => 'Kami mendampingi siswa untuk berkembang.',
+                'status' => 'published',
+                'metadata' => [
+                    'name' => 'Kepala Sekolah Uji',
+                    'description' => 'Sambutan untuk peserta didik dan orang tua.',
+                ],
+                'image' => UploadedFile::fake()->image('kepala-sekolah.jpg', 600, 400),
+            ])
+            ->assertRedirect(route('admin.content.index', $type));
+
+        $entry = PrincipalWelcome::query()
+            ->where('slug', 'sambutan-kepala-sekolah-2026')
+            ->firstOrFail();
+        $imagePath = $entry->image_path;
+
+        $this->assertSame(8, $entry->sort_order);
+        $this->assertSame($publishedAt->format('Y-m-d H:i:s'), $entry->published_at->format('Y-m-d H:i:s'));
+        $this->assertDatabaseHas('content_activities', [
+            'content_type' => 'principal_welcome',
+            'content_id' => $entry->id,
+            'action' => 'created',
+        ]);
+        Storage::disk('public')->assertExists($imagePath);
+        $this->assertDatabaseMissing('teachers', ['slug' => 'sambutan-kepala-sekolah-2026'], 'teachers');
+
+        $this->travelTo($publishedAt->copy()->addMinute());
+        $this->actingAs($admin, 'admin')
+            ->put(route('admin.content.update', ['type' => $type, 'entry' => $entry]), [
+                'title' => 'Sambutan Kepala Sekolah 2027',
+                'category' => 'Kepala SMK Islamiyah Ciputat',
+                'summary' => 'Salam pembuka yang diperbarui.',
+                'body' => 'Isi sambutan yang diperbarui.',
+                'status' => 'published',
+                'metadata' => [
+                    'name' => 'Kepala Sekolah Uji',
+                    'description' => 'Deskripsi yang diperbarui.',
+                ],
+            ])
+            ->assertRedirect(route('admin.content.index', $type));
+
+        $entry->refresh();
+        $this->assertSame('sambutan-kepala-sekolah-2027', $entry->slug);
+        $this->assertSame(8, $entry->sort_order);
+        $this->assertSame($publishedAt->format('Y-m-d H:i:s'), $entry->published_at->format('Y-m-d H:i:s'));
+        $this->assertSame($imagePath, $entry->image_path);
+        $this->assertDatabaseHas('content_activities', [
+            'content_type' => 'principal_welcome',
+            'content_id' => $entry->id,
+            'action' => 'updated',
+        ]);
+
+        $this->get(route('home'))
+            ->assertOk()
+            ->assertSee('Kepala Sekolah Uji')
+            ->assertSee('Isi sambutan yang diperbarui.');
+
+        $this->actingAs($admin, 'admin')
+            ->delete(route('admin.content.destroy', ['type' => $type, 'entry' => $entry]))
+            ->assertRedirect(route('admin.content.index', $type));
+
+        $this->assertDatabaseMissing('principal_welcomes', ['id' => $entry->id]);
+        $this->assertDatabaseHas('content_activities', [
+            'content_type' => 'principal_welcome',
+            'content_id' => $entry->id,
+            'action' => 'deleted',
+        ]);
+        Storage::disk('public')->assertMissing($imagePath);
+    }
+
+    public function test_principal_welcome_generates_unique_slugs_and_automatic_order(): void
+    {
+        $admin = $this->createAdmin();
+        $type = 'principal-welcomes';
+
+        PrincipalWelcome::query()->create([
+            'title' => 'Sambutan Sebelumnya',
+            'slug' => 'sambutan-sebelumnya-untuk-urutan',
+            'status' => 'draft',
+            'sort_order' => 7,
+            'metadata' => [],
+        ]);
+
+        $this->actingAs($admin, 'admin')
+            ->post(route('admin.content.store', $type), [
+                'title' => 'Sambutan Otomatis Uji',
+                'status' => 'draft',
+            ])
+            ->assertRedirect(route('admin.content.index', $type));
+
+        $this->actingAs($admin, 'admin')
+            ->post(route('admin.content.store', $type), [
+                'title' => 'Sambutan Otomatis Uji',
+                'status' => 'draft',
+            ])
+            ->assertRedirect(route('admin.content.index', $type));
+
+        $entries = PrincipalWelcome::query()
+            ->where('title', 'Sambutan Otomatis Uji')
+            ->orderBy('id')
+            ->get();
+
+        $this->assertSame(
+            ['sambutan-otomatis-uji', 'sambutan-otomatis-uji-2'],
+            $entries->pluck('slug')->all(),
+        );
+        $this->assertSame([8, 9], $entries->pluck('sort_order')->all());
+        $this->assertNull($entries[0]->published_at);
+        $this->assertNull($entries[1]->published_at);
+    }
+
+    public function test_principal_welcome_migration_preserves_existing_settings(): void
+    {
+        ContentEntry::query()->where('type', 'principal_welcome')->delete();
+
+        $legacySettings = [
+            'home.principal.visible' => true,
+            'home.principal.name' => 'Kepala Sekolah Lama',
+            'home.principal.position' => 'Kepala SMK Islamiyah Ciputat',
+            'home.principal.greeting' => 'Salam lama.',
+            'home.principal.message' => 'Isi sambutan lama.',
+            'home.principal.description' => 'Deskripsi lama.',
+            'home.principal.image' => 'cms/settings/kepala.jpg',
+        ];
+
+        foreach ($legacySettings as $key => $value) {
+            SiteSetting::query()->updateOrCreate(
+                ['key' => $key],
+                ['group' => 'home', 'value' => json_encode($value, JSON_THROW_ON_ERROR)],
+            );
+        }
+
+        $migration = require database_path('migrations/2026_11_12_031213_migrate_principal_welcome_settings_to_content_entries.php');
+        $migration->up();
+
+        $entry = ContentEntry::query()->where('type', 'principal_welcome')->firstOrFail();
+
+        $this->assertSame('Kepala Sekolah Lama', $entry->metadata['name']);
+        $this->assertSame('Deskripsi lama.', $entry->metadata['description']);
+        $this->assertSame('Isi sambutan lama.', $entry->body);
+        $this->assertSame('cms/settings/kepala.jpg', $entry->image_path);
+        $this->assertDatabaseMissing('site_settings', ['key' => 'home.principal.message']);
     }
 
     public function test_settings_reject_unsafe_link_schemes(): void
@@ -115,8 +521,7 @@ class CmsAdminTest extends TestCase
 
     public function test_public_news_escapes_admin_provided_html(): void
     {
-        $article = ContentEntry::query()->create([
-            'type' => 'news',
+        $article = NewsArticle::query()->create([
             'title' => '<script>alert(1)</script>',
             'slug' => 'safe-rendering-test',
             'summary' => '<img src=x onerror=alert(1)>',
@@ -257,6 +662,74 @@ class CmsAdminTest extends TestCase
         $this->get(route('teachers'))
             ->assertOk()
             ->assertDontSee('Guru Uji Edit');
+    }
+
+    public function test_public_teacher_directory_filters_by_teacher_category(): void
+    {
+        $guru = $this->createTeacher([
+            'name' => 'Siti Guru',
+            'slug' => 'siti-guru',
+            'category' => 'Tenaga Pendidik',
+        ]);
+        $staff = $this->createTeacher([
+            'name' => 'Budi Tenaga Kependidikan',
+            'slug' => 'budi-tenaga-kependidikan',
+            'category' => 'Tenaga Kependidikan',
+        ]);
+
+        $this->get(route('teachers', ['category' => 'guru']))
+            ->assertOk()
+            ->assertSee($guru->name)
+            ->assertDontSee($staff->name);
+    }
+
+    public function test_public_teacher_directory_filters_by_support_staff_category(): void
+    {
+        $guru = $this->createTeacher([
+            'name' => 'Siti Guru',
+            'slug' => 'siti-guru',
+            'category' => 'Tenaga Pendidik',
+        ]);
+        $staff = $this->createTeacher([
+            'name' => 'Budi Tenaga Kependidikan',
+            'slug' => 'budi-tenaga-kependidikan',
+            'category' => 'Tenaga Kependidikan',
+        ]);
+
+        $this->get(route('teachers', ['category' => 'kependidikan']))
+            ->assertOk()
+            ->assertSee($staff->name)
+            ->assertDontSee($guru->name);
+    }
+
+    public function test_public_teacher_directory_search_and_pagination_keep_the_selected_filters(): void
+    {
+        foreach (range(1, 9) as $number) {
+            $this->createTeacher([
+                'name' => sprintf('Guru Pendidik %02d', $number),
+                'slug' => sprintf('guru-pendidik-%02d', $number),
+                'category' => 'Tenaga Pendidik',
+            ]);
+        }
+
+        $this->get(route('teachers', [
+            'category' => 'guru',
+            'search' => 'Pendidik',
+        ]))
+            ->assertOk()
+            ->assertSee('Guru Pendidik 01')
+            ->assertDontSee('Guru Pendidik 09')
+            ->assertSee('category=guru', false)
+            ->assertSee('search=Pendidik', false)
+            ->assertSee('page=2', false);
+
+        $this->get(route('teachers', [
+            'category' => 'guru',
+            'search' => 'Pendidik',
+            'page' => 2,
+        ]))
+            ->assertOk()
+            ->assertSee('Guru Pendidik 09');
     }
 
     public function test_teacher_edit_does_not_create_duplicate_record(): void
@@ -449,7 +922,11 @@ class CmsAdminTest extends TestCase
             ->assertRedirect(route('admin.teachers.index'));
 
         $this->assertSame(0, Teacher::query()->count());
-        $this->get(route('teachers'))->assertOk()->assertDontSee('Guru');
+        $this->get(route('teachers'))
+            ->assertOk()
+            ->assertDontSee('Guru 1')
+            ->assertDontSee('Guru 2')
+            ->assertDontSee('Guru 3');
     }
 
     private function createAdmin(string $role = 'superadmin'): Admin

@@ -11,9 +11,11 @@ use App\Http\Controllers\Admin\TeacherController;
 use App\Http\Controllers\Public\ContentController;
 use App\Http\Controllers\Public\HomeController;
 use App\Http\Controllers\Public\ProgramController;
+use App\Http\Controllers\Public\SitemapController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', HomeController::class)->name('home');
+Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
 
 Route::get('/program/kuliner', [ProgramController::class, 'legacy'])->defaults('programKey', 'kuliner')->name('program.kuliner');
 Route::get('/program/dkv', [ProgramController::class, 'legacy'])->defaults('programKey', 'dkv')->name('program.dkv');

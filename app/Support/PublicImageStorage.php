@@ -2,7 +2,7 @@
 
 namespace App\Support;
 
-use App\Models\ContentEntry;
+use App\Models\ContentRecord;
 use App\Models\MediaAsset;
 use App\Models\SiteSetting;
 use App\Models\Teacher;
@@ -90,9 +90,14 @@ class PublicImageStorage
             return $this->mediaLibrary->canDelete($asset);
         }
 
+        foreach (ContentRecord::modelClasses() as $model) {
+            if ($model::query()->where('image_path', $path)->exists()) {
+                return false;
+            }
+        }
+
         if (
-            ContentEntry::query()->where('image_path', $path)->exists()
-            || Teacher::query()->where('image_path', $path)->exists()
+            Teacher::query()->where('image_path', $path)->exists()
             || SiteSetting::query()->where('value', json_encode($path, JSON_THROW_ON_ERROR))->exists()
         ) {
             return false;

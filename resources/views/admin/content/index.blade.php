@@ -8,7 +8,13 @@
     <div class="admin-page-intro">
         <div>
             <h2>Kelola {{ mb_strtolower($typeConfig['plural']) }}</h2>
-            <p>Data yang berstatus published akan ditampilkan pada website publik.</p>
+            <p>
+                @if ($typeConfig['type'] === 'news')
+                    Posisi beranda ditentukan saat menambah atau mengedit berita. Slot berita utama hanya satu.
+                @else
+                    Data yang berstatus published akan ditampilkan pada website publik.
+                @endif
+            </p>
         </div>
         <a href="{{ route('admin.content.create', $type) }}" class="admin-button admin-button-primary">+ Tambah {{ $typeConfig['singular'] }}</a>
     </div>
@@ -44,7 +50,10 @@
                         <tr>
                             <th class="admin-check-col"><input type="checkbox" data-bulk-select-page aria-label="Pilih semua di halaman"></th>
                             <th>Konten</th>
-                            <th>Jenis / Kategori</th>
+                            <th>{{ $typeConfig['category_label'] ?? 'Jenis / Kategori' }}</th>
+                            @if ($typeConfig['type'] === 'news')
+                                <th>Posisi beranda</th>
+                            @endif
                             <th>Status</th>
                             <th>Diperbarui</th>
                             <th class="admin-table-actions">Aksi</th>
@@ -63,6 +72,21 @@
                                     </div>
                                 </td>
                                 <td>{{ $entry->category ?: $typeConfig['singular'] }}</td>
+                                @if ($typeConfig['type'] === 'news')
+                                    @php($homepageGroup = data_get($entry->metadata, 'homepage_group'))
+                                    @if (! in_array($homepageGroup, array_keys($typeConfig['fields']['homepage_group']['options']), true))
+                                        @php($homepageGroup = 'auto')
+                                    @endif
+                                    @php($homepageLabel = $typeConfig['fields']['homepage_group']['options'][$homepageGroup])
+                                    @if ($homepageGroup === 'featured' && $entry->status === 'draft')
+                                        @php($homepageLabel .= ' (Draft)')
+                                    @elseif ($homepageGroup === 'featured' && $entry->published_at?->isFuture())
+                                        @php($homepageLabel .= ' (Terjadwal)')
+                                    @elseif ($homepageGroup === 'featured' && $entry->id !== (int) $activeMainNewsId)
+                                        @php($homepageLabel = 'Otomatis (digantikan berita utama yang lebih baru)')
+                                    @endif
+                                    <td><span class="admin-status admin-status-draft">{{ $homepageLabel }}</span></td>
+                                @endif
                                 <td><span class="admin-status admin-status-{{ $entry->status }}">{{ $entry->status === 'published' ? 'Published' : 'Draft' }}</span></td>
                                 <td>{{ $entry->updated_at->format('d M Y') }}</td>
                                 <td class="admin-table-actions">
@@ -73,7 +97,7 @@
                                 </td>
                             </tr>
                         @empty
-                            <tr><td colspan="6"><div class="admin-empty-state">Belum ada data {{ mb_strtolower($typeConfig['plural']) }}{{ $search !== '' ? ' yang cocok dengan pencarian.' : '.' }}</div></td></tr>
+                            <tr><td colspan="{{ $typeConfig['type'] === 'news' ? 7 : 6 }}"><div class="admin-empty-state">Belum ada data {{ mb_strtolower($typeConfig['plural']) }}{{ $search !== '' ? ' yang cocok dengan pencarian.' : '.' }}</div></td></tr>
                         @endforelse
                     </tbody>
                 </table>

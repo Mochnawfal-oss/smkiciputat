@@ -4,7 +4,10 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\ContentActivity;
-use App\Models\ContentEntry;
+use App\Models\GalleryPhoto;
+use App\Models\JobVacancy;
+use App\Models\NewsArticle;
+use App\Models\Program;
 use App\Models\Teacher;
 use Illuminate\View\View;
 
@@ -14,14 +17,13 @@ class DashboardController extends Controller
     {
         return view('admin.dashboard', [
             'counts' => [
-                'programs' => ContentEntry::query()->where('type', 'program')->count(),
+                'programs' => Program::query()->count(),
                 'teachers' => Teacher::query()->count(),
-                'news' => ContentEntry::query()->where('type', 'news')->count(),
-                'jobs' => ContentEntry::query()->where('type', 'job')->count(),
-                'gallery' => ContentEntry::query()->where('type', 'gallery')->count(),
+                'news' => NewsArticle::query()->count(),
+                'jobs' => JobVacancy::query()->count(),
+                'gallery' => GalleryPhoto::query()->count(),
             ],
-            'latestNews' => ContentEntry::query()
-                ->where('type', 'news')
+            'latestNews' => NewsArticle::query()
                 ->latest('published_at')
                 ->latest('id')
                 ->limit(5)

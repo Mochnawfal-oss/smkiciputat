@@ -14,13 +14,26 @@
         type="button"
         aria-expanded="false"
         aria-controls="{{ $profileId }}"
-        aria-label="Lihat kartu identitas {{ $teacher->name }}"
+        aria-label="Lihat profil {{ $teacher->name }}"
     >
         @include('components.teacher-id-card-face', [
             'teacher' => $teacher,
             'photoUrl' => $photoUrl,
             'loading' => $featured ? 'eager' : 'lazy',
         ])
+        @if (in_array($context, ['directory', 'home'], true))
+            <span class="educator-card-caption">
+                <strong class="educator-card-name">{{ $teacher->name }}</strong>
+                @if ($teacher->position || $teacher->category)
+                    <span class="educator-card-position">
+                        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                            <path d="M20 21v-1.8a3.7 3.7 0 0 0-3.7-3.7H7.7A3.7 3.7 0 0 0 4 19.2V21M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        {{ $teacher->position ?: $teacher->category }}
+                    </span>
+                @endif
+            </span>
+        @endif
     </button>
 
     <button

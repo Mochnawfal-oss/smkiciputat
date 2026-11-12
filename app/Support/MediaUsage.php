@@ -2,7 +2,7 @@
 
 namespace App\Support;
 
-use App\Models\ContentEntry;
+use App\Models\ContentRecord;
 use App\Models\MediaAsset;
 use App\Models\SiteSetting;
 use App\Models\Teacher;
@@ -32,11 +32,13 @@ class MediaUsage
 
         $usage = [];
 
-        foreach (ContentEntry::query()->whereIn('image_path', $paths)->get(['image_path', 'type', 'title']) as $entry) {
-            $usage[$entry->image_path][] = [
-                'type' => $this->contentTypeLabel($entry->type),
-                'title' => $entry->title,
-            ];
+        foreach (ContentRecord::modelClasses() as $type => $model) {
+            foreach ($model::query()->whereIn('image_path', $paths)->get(['image_path', 'title']) as $entry) {
+                $usage[$entry->image_path][] = [
+                    'type' => $this->contentTypeLabel($type),
+                    'title' => $entry->title,
+                ];
+            }
         }
 
         foreach (Teacher::query()->whereIn('image_path', $paths)->get(['image_path', 'name']) as $teacher) {

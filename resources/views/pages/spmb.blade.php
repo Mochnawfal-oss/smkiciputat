@@ -10,7 +10,7 @@
         $steps = collect(preg_split('/\r\n|\r|\n/', $siteSettings['spmb.steps']))
             ->filter(fn (string $item): bool => trim($item) !== '');
     @endphp
-    <section class="admission-section">
+    <section class="admission-section public-page--spmb">
         <div class="container admission-inner">
             <div class="admission-copy">
                 <span class="section-label">SPMB TAHUN AJARAN {{ $siteSettings['spmb.year'] }}</span>
@@ -38,16 +38,16 @@
     </section>
 
     @if ($siteSettings['spmb.schedule'] || $requirements->isNotEmpty() || $siteSettings['spmb.fee'])
-        <section class="section">
-            <div class="container grid gap-8 md:grid-cols-2">
+        <section class="section public-page--spmb-details">
+            <div class="container public-page__content-grid grid gap-5 md:grid-cols-2">
                 @if ($siteSettings['spmb.schedule'])
-                    <div>
+                    <div class="public-page__content-card">
                         <h2 class="editorial-heading">Jadwal pendaftaran</h2>
                         <p class="whitespace-pre-line leading-relaxed text-[#53665B]">{{ $siteSettings['spmb.schedule'] }}</p>
                     </div>
                 @endif
                 @if ($requirements->isNotEmpty())
-                    <div>
+                    <div class="public-page__content-card">
                         <h2 class="editorial-heading">Persyaratan</h2>
                         <ul class="list-disc space-y-2 pl-5 text-[#53665B]">
                             @foreach ($requirements as $requirement)
@@ -57,7 +57,7 @@
                     </div>
                 @endif
                 @if ($siteSettings['spmb.fee'])
-                    <div>
+                    <div class="public-page__content-card">
                         <h2 class="editorial-heading">Informasi biaya</h2>
                         <p class="whitespace-pre-line leading-relaxed text-[#53665B]">{{ $siteSettings['spmb.fee'] }}</p>
                     </div>

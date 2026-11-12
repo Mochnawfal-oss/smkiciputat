@@ -2,7 +2,7 @@
 
 namespace App\Support;
 
-use App\Models\ContentEntry;
+use App\Models\ContentRecord;
 use App\Models\MediaAsset;
 use App\Models\SiteSetting;
 use App\Models\Teacher;
@@ -247,14 +247,22 @@ class MediaLibrary
             $current->poster_path,
         ])));
         $newPath = $replacement->publicPath();
-        $entries = ContentEntry::query()->whereIn('image_path', $oldPaths)->get(['id', 'image_path']);
+        $contentRecords = [];
+        foreach (ContentRecord::modelClasses() as $model) {
+            $contentRecords[$model] = $model::query()
+                ->whereIn('image_path', $oldPaths)
+                ->get(['id', 'image_path']);
+        }
         $teachers = Teacher::query()->whereIn('image_path', $oldPaths)->get(['id', 'image_path']);
         $encodedOldPaths = collect($oldPaths)->map(fn (string $path): string => json_encode($path, JSON_THROW_ON_ERROR));
         $settings = SiteSetting::query()->whereIn('value', $encodedOldPaths)->get(['key', 'value']);
 
         try {
-            DB::transaction(function () use ($oldPaths, $newPath, $encodedOldPaths): void {
-                ContentEntry::query()->whereIn('image_path', $oldPaths)->update(['image_path' => $newPath]);
+            DB::transaction(function () use ($contentRecords, $oldPaths, $newPath, $encodedOldPaths): void {
+                foreach (array_keys($contentRecords) as $model) {
+                    $model::query()->whereIn('image_path', $oldPaths)->update(['image_path' => $newPath]);
+                }
+
                 SiteSetting::query()->whereIn('value', $encodedOldPaths)->update([
                     'value' => json_encode($newPath, JSON_THROW_ON_ERROR),
                 ]);
@@ -265,9 +273,11 @@ class MediaLibrary
             );
         } catch (Throwable $exception) {
             try {
-                DB::transaction(function () use ($entries, $settings): void {
-                    foreach ($entries as $entry) {
-                        ContentEntry::query()->whereKey($entry->id)->update(['image_path' => $entry->image_path]);
+                DB::transaction(function () use ($contentRecords, $settings): void {
+                    foreach ($contentRecords as $model => $entries) {
+                        foreach ($entries as $entry) {
+                            $model::query()->whereKey($entry->id)->update(['image_path' => $entry->image_path]);
+                        }
                     }
 
                     foreach ($settings as $setting) {
@@ -299,10 +309,20 @@ class MediaLibrary
      */
     public function indexReferencedFiles(): void
     {
-        $paths = ContentEntry::query()->whereNotNull('image_path')->distinct()->pluck('image_path')
-            ->merge(Teacher::query()->whereNotNull('image_path')->distinct()->pluck('image_path'));
+        $paths = collect();
+        foreach (ContentRecord::modelClasses() as $model) {
+            $paths = $paths->merge(
+                $model::query()->whereNotNull('image_path')->distinct()->pluck('image_path'),
+            );
+        }
+        $paths = $paths->merge(Teacher::query()->whereNotNull('image_path')->distinct()->pluck('image_path'));
 
-        foreach (SiteSetting::query()->get(['value']) as $setting) {
+        $imageSettingKeys = collect(config('site-content.fields', []))
+            ->filter(fn (array $field): bool => ($field['type'] ?? null) === 'image')
+            ->keys()
+            ->all();
+
+        foreach (SiteSetting::query()->whereIn('key', $imageSettingKeys)->get(['value']) as $setting) {
             $value = json_decode($setting->value, true);
             if (is_string($value)) {
                 $paths->push($value);

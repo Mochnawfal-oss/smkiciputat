@@ -2,38 +2,112 @@
 
 @section('title', $program->meta_title ?: $program->title.' | '.$siteSettings['identity.school_name'])
 @section('meta_description', $program->meta_description ?: $program->summary)
+@section('meta_image', $program->image_path ? $siteConfiguration->imageUrl($program->image_path) : '')
+
+@php
+    $programImage = $program->image_path ? $siteConfiguration->imageUrl($program->image_path) : null;
+    $competencies = collect(preg_split('/\r\n|\r|\n/', data_get($program->metadata, 'advantages', '') ?? ''))
+        ->map(fn (string $item): string => trim($item))
+        ->filter();
+    $programHighlights = [
+        ['label' => 'Kompetensi Utama', 'value' => data_get($program->metadata, 'primary_competence'), 'icon' => 'award'],
+        ['label' => 'Fasilitas', 'value' => data_get($program->metadata, 'facilities'), 'icon' => 'building-2'],
+        ['label' => 'Peluang Karier', 'value' => data_get($program->metadata, 'career_opportunities'), 'icon' => 'briefcase-business'],
+    ];
+@endphp
 
 @section('content')
-    <section class="section">
-        <div class="container">
-            <header class="news-section-heading">
-                <span class="section-label">PROGRAM KEAHLIAN</span>
-                <h1 class="editorial-heading">{{ $program->title }}</h1>
-                @if ($program->summary)
-                    <p>{{ $program->summary }}</p>
+    <section class="program-detail">
+        <div class="container program-detail__container">
+            <nav class="program-breadcrumb" aria-label="Breadcrumb">
+                <a href="{{ route('home') }}">Beranda</a>
+                <span aria-hidden="true">›</span>
+                <a href="{{ route('home') }}#program-keahlian">Program Keahlian</a>
+                <span aria-hidden="true">›</span>
+                <span aria-current="page">{{ $program->title }}</span>
+            </nav>
+
+            <section class="program-hero {{ $programImage ? 'program-hero--with-image' : '' }}" aria-labelledby="program-title">
+                <div class="program-hero__copy">
+                    <span class="program-detail__eyebrow">Program Keahlian</span>
+                    <h1 id="program-title">{{ $program->title }}</h1>
+                    <span class="program-hero__rule" aria-hidden="true"></span>
+                    @if ($program->summary)
+                        <p>{{ $program->summary }}</p>
+                    @endif
+                </div>
+                @if ($programImage)
+                    <figure class="program-hero__image">
+                        <img src="{{ $programImage }}" alt="Program keahlian {{ $program->title }}" fetchpriority="high">
+                    </figure>
                 @endif
-            </header>
-            @if ($program->image_path)
-                <figure class="mx-auto my-8 max-w-5xl overflow-hidden rounded-xl">
-                    <img class="max-h-[560px] w-full object-cover" src="{{ $siteConfiguration->imageUrl($program->image_path) }}" alt="Foto program {{ $program->title }}" loading="lazy">
-                </figure>
-            @endif
-            @if ($program->body)
-                <div class="mx-auto max-w-4xl whitespace-pre-line leading-relaxed text-[#53665B]">{{ $program->body }}</div>
-            @endif
-            @if (data_get($program->metadata, 'advantages'))
-                <section class="mx-auto mt-10 max-w-4xl">
-                    <h2 class="editorial-heading">Kompetensi yang dipelajari</h2>
-                    <ul class="list-disc space-y-2 pl-5 text-[#53665B]">
-                        @foreach (preg_split('/\r\n|\r|\n/', data_get($program->metadata, 'advantages')) as $advantage)
-                            @if (trim($advantage) !== '')
-                                <li>{{ trim($advantage) }}</li>
-                            @endif
-                        @endforeach
-                    </ul>
+            </section>
+
+            @if (collect($programHighlights)->contains(fn (array $highlight): bool => filled($highlight['value'])))
+                <section class="program-highlights" aria-label="Informasi program">
+                    @foreach ($programHighlights as $highlight)
+                        @if (filled($highlight['value']))
+                            <article class="program-highlight">
+                                <span class="program-highlight__icon" aria-hidden="true">
+                                    <i data-lucide="{{ $highlight['icon'] }}"></i>
+                                </span>
+                                <div>
+                                    <h2>{{ $highlight['label'] }}</h2>
+                                    <p>{{ $highlight['value'] }}</p>
+                                </div>
+                            </article>
+                        @endif
+                    @endforeach
                 </section>
             @endif
-            <a class="principal-about-link" href="{{ route('home') }}#program-keahlian">Kembali ke program keahlian <span aria-hidden="true">→</span></a>
+
+            <section class="program-about {{ $programPhotos->isNotEmpty() ? 'program-about--with-image' : '' }}" aria-labelledby="program-about-title">
+                @if ($programPhotos->isNotEmpty())
+                    <figure class="program-about__image">
+                        <img src="{{ $siteConfiguration->imageUrl($programPhotos->first()->image_path) }}" alt="{{ $programPhotos->first()->title }}" loading="lazy">
+                    </figure>
+                @endif
+                <div class="program-about__copy">
+                    <h2 id="program-about-title">Tentang Program {{ $program->title }}</h2>
+                    @if ($program->body ?: $program->summary)
+                        <p class="program-about__description">{{ $program->body ?: $program->summary }}</p>
+                    @endif
+                    @if ($competencies->isNotEmpty())
+                        <div class="program-competencies">
+                            <h3><i data-lucide="book-open" aria-hidden="true"></i> Kompetensi yang Dipelajari</h3>
+                            <ul>
+                                @foreach ($competencies as $competency)
+                                    <li><i data-lucide="circle-check" aria-hidden="true"></i>{{ $competency }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+                </div>
+            </section>
+
+            @if ($programPhotos->isNotEmpty())
+                <section class="program-gallery" aria-labelledby="program-gallery-title">
+                    <h2 id="program-gallery-title">Galeri Kegiatan {{ $program->title }}</h2>
+                    <div class="program-gallery__grid">
+                        @foreach ($programPhotos->take(5) as $photo)
+                            <figure>
+                                <img src="{{ $siteConfiguration->imageUrl($photo->image_path) }}" alt="{{ $photo->title }}" loading="lazy">
+                                @if ($photo->title)
+                                    <figcaption>{{ $photo->title }}</figcaption>
+                                @endif
+                            </figure>
+                        @endforeach
+                    </div>
+                </section>
+            @endif
+
+            <section class="program-cta" aria-label="Pendaftaran SPMB">
+                <div>
+                    <h2>Tertarik dengan Program {{ $program->title }}?</h2>
+                    <p>Jadilah bagian dari SMK Islamiyah Ciputat dan kembangkan bakatmu bersama kami.</p>
+                </div>
+                <a href="{{ route('spmb') }}">Daftar SPMB Sekarang <span aria-hidden="true">→</span></a>
+            </section>
         </div>
     </section>
 @endsection

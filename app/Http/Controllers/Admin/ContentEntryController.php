@@ -4,10 +4,12 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\ContentActivity;
-use App\Models\ContentEntry;
+use App\Models\ContentRecord;
+use App\Models\NewsArticle;
+use App\Models\PrincipalWelcome;
+use App\Models\Program;
 use App\Support\PublicImageStorage;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -24,8 +26,8 @@ class ContentEntryController extends Controller
         $typeConfig = $this->typeConfig($type);
         $search = $request->string('search')->trim()->toString();
 
-        $query = ContentEntry::query()
-            ->where('type', $typeConfig['type'])
+        $model = ContentRecord::modelForType($typeConfig['type']);
+        $query = $model::query()
             ->when($search !== '', function (Builder $query) use ($search): void {
                 $query->where(function (Builder $query) use ($search): void {
                     $query->where('title', 'like', '%'.$search.'%')
@@ -41,17 +43,28 @@ class ContentEntryController extends Controller
             ->withQueryString();
 
         $totalCount = (clone $query)->count();
+        $activeMainNewsId = null;
 
-        return view('admin.content.index', compact('entries', 'search', 'type', 'typeConfig', 'totalCount'));
+        if ($typeConfig['type'] === 'news') {
+            $activeMainNewsId = NewsArticle::query()
+                ->published()
+                ->where('metadata->homepage_group', 'featured')
+                ->orderByDesc('published_at')
+                ->orderByDesc('id')
+                ->value('id');
+        }
+
+        return view('admin.content.index', compact('entries', 'search', 'type', 'typeConfig', 'totalCount', 'activeMainNewsId'));
     }
 
     public function create(string $type): View
     {
         $typeConfig = $this->typeConfig($type);
         $defaultStatus = $typeConfig['type'] === 'teacher' ? 'published' : 'draft';
+        $model = ContentRecord::modelForType($typeConfig['type']);
 
         return view('admin.content.form', [
-            'entry' => new ContentEntry(['status' => $defaultStatus]),
+            'entry' => new $model(['status' => $defaultStatus]),
             'type' => $type,
             'typeConfig' => $typeConfig,
         ]);
@@ -61,7 +74,12 @@ class ContentEntryController extends Controller
     {
         $typeConfig = $this->typeConfig($type);
 
-        if ($typeConfig['type'] === 'teacher') {
+        if ($typeConfig['type'] === 'principal_welcome') {
+            $title = $request->input('title');
+            $request->merge([
+                'slug' => $this->uniquePrincipalWelcomeSlug(is_string($title) ? $title : ''),
+            ]);
+        } elseif ($typeConfig['type'] === 'teacher') {
             $baseSlug = Str::slug($request->input('title', 'guru'));
             $request->merge([
                 'slug' => filled($request->input('slug')) ? Str::slug($request->input('slug')) : ($baseSlug ?: 'guru-'.Str::random(6)),
@@ -79,6 +97,12 @@ class ContentEntryController extends Controller
         $validated = $request->validate($this->rules($request, $typeConfig));
         $attributes = $this->attributes($validated, $typeConfig);
 
+        if ($typeConfig['type'] === 'principal_welcome') {
+            $highestSortOrder = PrincipalWelcome::query()->max('sort_order');
+            $attributes['sort_order'] = $highestSortOrder === null ? 0 : (int) $highestSortOrder + 1;
+            $attributes['published_at'] = $attributes['status'] === 'published' ? now() : null;
+        }
+
         if ($request->hasFile('image')) {
             $attributes['image_path'] = $images->store(
                 $request->file('image'),
@@ -91,10 +115,16 @@ class ContentEntryController extends Controller
             $attributes['image_path'] = $images->storeFromAsset($request->integer('media_asset_id'));
         }
 
-        $entry = ContentEntry::query()->create([
-            ...$attributes,
-            'type' => $typeConfig['type'],
-        ]);
+        $model = ContentRecord::modelForType($typeConfig['type']);
+        if ($this->shouldReplaceMainNews($typeConfig['type'], $attributes)) {
+            $entry = DB::transaction(function () use ($attributes, $model): ContentRecord {
+                $this->moveExistingMainNewsToAutomatic();
+
+                return $model::query()->create($attributes);
+            });
+        } else {
+            $entry = $model::query()->create($attributes);
+        }
 
         $this->recordActivity($entry, 'created');
 
@@ -103,10 +133,10 @@ class ContentEntryController extends Controller
             ->with('success', $typeConfig['singular'].' berhasil ditambahkan.');
     }
 
-    public function edit(string $type, ContentEntry $entry): View
+    public function edit(string $type, string $entry): View
     {
         $typeConfig = $this->typeConfig($type);
-        $this->ensureEntryType($entry, $typeConfig['type']);
+        $entry = $this->resolveEntry($typeConfig, $entry);
 
         return view('admin.content.form', compact('entry', 'type', 'typeConfig'));
     }
@@ -114,13 +144,21 @@ class ContentEntryController extends Controller
     public function update(
         Request $request,
         string $type,
-        ContentEntry $entry,
+        string $entry,
         PublicImageStorage $images,
     ): RedirectResponse {
         $typeConfig = $this->typeConfig($type);
-        $this->ensureEntryType($entry, $typeConfig['type']);
+        $entry = $this->resolveEntry($typeConfig, $entry);
 
-        if ($typeConfig['type'] === 'teacher') {
+        if ($typeConfig['type'] === 'principal_welcome') {
+            $title = $request->input('title');
+            $request->merge([
+                'slug' => $this->uniquePrincipalWelcomeSlug(
+                    is_string($title) ? $title : '',
+                    $entry,
+                ),
+            ]);
+        } elseif ($typeConfig['type'] === 'teacher') {
             $baseSlug = Str::slug($request->input('title', 'guru'));
             $request->merge([
                 'slug' => filled($request->input('slug')) ? Str::slug($request->input('slug')) : ($baseSlug ?: 'guru-'.$entry->id),
@@ -137,6 +175,16 @@ class ContentEntryController extends Controller
 
         $validated = $request->validate($this->rules($request, $typeConfig, $entry));
         $attributes = $this->attributes($validated, $typeConfig);
+
+        if ($typeConfig['type'] === 'principal_welcome') {
+            $attributes['published_at'] = $entry->published_at
+                ?? ($attributes['status'] === 'published' ? now() : null);
+            $attributes['sort_order'] = $entry->sort_order;
+            $attributes['featured'] = $entry->featured;
+        } elseif ($typeConfig['type'] === 'news') {
+            $attributes['featured'] = $entry->featured;
+        }
+
         $oldImage = $entry->image_path;
 
         if ($request->hasFile('image')) {
@@ -151,7 +199,15 @@ class ContentEntryController extends Controller
             $attributes['image_path'] = $images->storeFromAsset($request->integer('media_asset_id'));
         }
 
-        $entry->update($attributes);
+        if ($this->shouldReplaceMainNews($typeConfig['type'], $attributes)) {
+            DB::transaction(function () use ($attributes, $entry): void {
+                $this->moveExistingMainNewsToAutomatic($entry->id);
+                $entry->update($attributes);
+            });
+        } else {
+            $entry->update($attributes);
+        }
+
         $images->deleteIfUnused($oldImage);
         $this->recordActivity($entry, 'updated');
 
@@ -160,13 +216,14 @@ class ContentEntryController extends Controller
             ->with('success', $typeConfig['singular'].' berhasil diperbarui.');
     }
 
-    public function destroy(string $type, ContentEntry $entry, PublicImageStorage $images): RedirectResponse
+    public function destroy(string $type, string $entry, PublicImageStorage $images): RedirectResponse
     {
         $typeConfig = $this->typeConfig($type);
-        $this->ensureEntryType($entry, $typeConfig['type']);
+        $entry = $this->resolveEntry($typeConfig, $entry);
+        $model = ContentRecord::modelForType($typeConfig['type']);
 
         $count = $this->deleteEntries(
-            ContentEntry::query()->whereKey($entry->id)->where('type', $typeConfig['type']),
+            $model::query()->whereKey($entry->id),
             $typeConfig,
             $images,
         );
@@ -189,7 +246,8 @@ class ContentEntryController extends Controller
             'ids.*' => ['integer', 'distinct'],
         ]);
 
-        $base = ContentEntry::query()->where('type', $typeConfig['type']);
+        $model = ContentRecord::modelForType($typeConfig['type']);
+        $base = $model::query();
         if ($request->boolean('select_all')) {
             // seluruh kategori (semua halaman)
         } elseif (! empty($validated['ids'])) {
@@ -212,6 +270,7 @@ class ContentEntryController extends Controller
     public function empty(Request $request, string $type, PublicImageStorage $images): RedirectResponse
     {
         $typeConfig = $this->typeConfig($type);
+        $model = ContentRecord::modelForType($typeConfig['type']);
         $request->validate([
             'confirm_name' => ['required', 'string'],
         ]);
@@ -223,7 +282,7 @@ class ContentEntryController extends Controller
         }
 
         $count = $this->deleteEntries(
-            ContentEntry::query()->where('type', $typeConfig['type']),
+            $model::query(),
             $typeConfig,
             $images,
         );
@@ -246,6 +305,15 @@ class ContentEntryController extends Controller
 
         abort_if(! is_array($typeConfig), 404);
 
+        if ($typeConfig['type'] === 'gallery') {
+            $typeConfig['fields']['program_route_key']['options'] = Program::query()
+                ->whereNotNull('route_key')
+                ->orderBy('sort_order')
+                ->orderBy('id')
+                ->pluck('title', 'route_key')
+                ->all();
+        }
+
         return $typeConfig;
     }
 
@@ -253,11 +321,12 @@ class ContentEntryController extends Controller
      * @param  array<string, mixed>  $typeConfig
      * @return array<string, mixed>
      */
-    private function rules(Request $request, array $typeConfig, ?ContentEntry $entry = null): array
+    private function rules(Request $request, array $typeConfig, ?ContentRecord $entry = null): array
     {
         $typeValue = $typeConfig['type'];
-        $slugRule = Rule::unique('content_entries', 'slug')
-            ->where(fn (QueryBuilder $query): QueryBuilder => $query->where('type', $typeValue));
+        $model = ContentRecord::modelForType($typeValue);
+        $table = (new $model)->getTable();
+        $slugRule = Rule::unique($table, 'slug');
 
         if ($entry !== null) {
             $slugRule->ignore($entry->id);
@@ -275,7 +344,12 @@ class ContentEntryController extends Controller
             'status' => ['required', Rule::in(['draft', 'published'])],
             'featured' => ['sometimes', 'boolean'],
             'sort_order' => ['nullable', 'integer', 'between:-10000,10000'],
-            'published_at' => ['nullable', 'date'],
+            'published_at' => [
+                'nullable',
+                'date_format:Y-m-d\TH:i',
+                'after_or_equal:1970-01-02',
+                'before:2038-01-19',
+            ],
             'meta_title' => ['nullable', 'string', 'max:180'],
             'meta_description' => ['nullable', 'string', 'max:320'],
         ];
@@ -293,8 +367,7 @@ class ContentEntryController extends Controller
             $fieldRule[] = $field['type'] === 'textarea' ? 'max:10000' : 'max:255';
 
             if ($name === 'route_key') {
-                $routeKeyRule = Rule::unique('content_entries', 'route_key')
-                    ->where(fn (QueryBuilder $query): QueryBuilder => $query->where('type', $typeValue));
+                $routeKeyRule = Rule::unique($table, 'route_key');
 
                 if ($entry !== null) {
                     $routeKeyRule->ignore($entry->id);
@@ -350,9 +423,67 @@ class ContentEntryController extends Controller
         return $attributes;
     }
 
-    private function ensureEntryType(ContentEntry $entry, string $type): void
+    /**
+     * @param  array<string, mixed>  $typeConfig
+     */
+    private function resolveEntry(array $typeConfig, string $id): ContentRecord
     {
-        abort_unless($entry->type === $type, 404);
+        $model = ContentRecord::modelForType($typeConfig['type']);
+
+        return $model::query()->findOrFail($id);
+    }
+
+    private function moveExistingMainNewsToAutomatic(?int $exceptId = null): void
+    {
+        $query = NewsArticle::query()
+            ->where('status', 'published')
+            ->where('metadata->homepage_group', 'featured')
+            ->lockForUpdate();
+
+        if ($exceptId !== null) {
+            $query->where('id', '<>', $exceptId);
+        }
+
+        foreach ($query->get() as $article) {
+            $metadata = $article->metadata ?? [];
+            $metadata['homepage_group'] = 'auto';
+            $article->update(['metadata' => $metadata]);
+            $this->recordActivity($article, 'updated');
+        }
+    }
+
+    /**
+     * @param  array<string, mixed>  $attributes
+     */
+    private function shouldReplaceMainNews(string $type, array $attributes): bool
+    {
+        return $type === 'news'
+            && ($attributes['status'] ?? null) === 'published'
+            && data_get($attributes, 'metadata.homepage_group') === 'featured'
+            && (blank($attributes['published_at'] ?? null) || now()->greaterThanOrEqualTo($attributes['published_at']));
+    }
+
+    private function uniquePrincipalWelcomeSlug(string $title, ?ContentRecord $entry = null): string
+    {
+        $baseSlug = Str::slug($title) ?: 'sambutan-kepala-sekolah';
+        $baseSlug = rtrim(substr($baseSlug, 0, 160), '-');
+        $suffix = 1;
+
+        do {
+            $suffixValue = $suffix === 1 ? '' : '-'.$suffix;
+            $slug = $baseSlug.$suffixValue;
+            $query = PrincipalWelcome::query()->where('slug', $slug);
+
+            if ($entry !== null) {
+                $query->where('id', '!=', $entry->id);
+            }
+
+            if (! $query->exists()) {
+                return $slug;
+            }
+
+            $suffix++;
+        } while (true);
     }
 
     private function mediaCategory(string $type): string
@@ -372,16 +503,16 @@ class ContentEntryController extends Controller
      *
      * @param  array<string, mixed>  $typeConfig
      */
-    private function deleteEntries($query, array $typeConfig, PublicImageStorage $images): int
+    private function deleteEntries(Builder $query, array $typeConfig, PublicImageStorage $images): int
     {
-        $entries = $query->where('type', $typeConfig['type'])->get(['id', 'title', 'image_path', 'type']);
+        $entries = $query->get(['id', 'title', 'image_path']);
         if ($entries->isEmpty()) {
             return 0;
         }
 
         $adminId = Auth::guard('admin')->id();
         $now = now();
-        $activities = $entries->map(fn (ContentEntry $entry): array => [
+        $activities = $entries->map(fn (ContentRecord $entry): array => [
             'admin_id' => $adminId,
             'content_type' => $entry->type,
             'content_id' => $entry->id,
@@ -391,8 +522,9 @@ class ContentEntryController extends Controller
             'updated_at' => $now,
         ])->all();
 
-        DB::transaction(function () use ($entries, $activities): void {
-            ContentEntry::query()->whereKey($entries->modelKeys())->delete();
+        $model = ContentRecord::modelForType($typeConfig['type']);
+        DB::transaction(function () use ($entries, $activities, $model): void {
+            $model::query()->whereKey($entries->modelKeys())->delete();
             if ($activities !== []) {
                 ContentActivity::query()->insert($activities);
             }
@@ -405,7 +537,7 @@ class ContentEntryController extends Controller
         return $entries->count();
     }
 
-    private function recordActivity(ContentEntry $entry, string $action): void
+    private function recordActivity(ContentRecord $entry, string $action): void
     {
         ContentActivity::query()->create([
             'admin_id' => Auth::guard('admin')->id(),

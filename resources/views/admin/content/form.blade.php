@@ -86,32 +86,34 @@
             {{-- Form Konten Standar (Program, Berita, Lowongan, Galeri) --}}
             <div class="admin-form-grid">
                 <div class="admin-field admin-field-full">
-                    <label for="title">Judul / nama <span>*</span></label>
+                    <label for="title">{{ $typeConfig['title_label'] ?? 'Judul / nama' }} <span>*</span></label>
                     <input id="title" name="title" type="text" value="{{ old('title', $entry->title) }}" maxlength="180" required>
                     @error('title')<small class="admin-field-error">{{ $message }}</small>@enderror
                 </div>
 
-                <div class="admin-field">
-                    <label for="slug">Slug URL</label>
-                    <input id="slug" name="slug" type="text" value="{{ old('slug', $entry->slug) }}" maxlength="180">
-                    <small>Dibuat otomatis dari judul jika dikosongkan.</small>
-                    @error('slug')<small class="admin-field-error">{{ $message }}</small>@enderror
-                </div>
+                @if ($typeConfig['type'] !== 'principal_welcome')
+                    <div class="admin-field">
+                        <label for="slug">Slug URL</label>
+                        <input id="slug" name="slug" type="text" value="{{ old('slug', $entry->slug) }}" maxlength="180">
+                        <small>Dibuat otomatis dari judul jika dikosongkan.</small>
+                        @error('slug')<small class="admin-field-error">{{ $message }}</small>@enderror
+                    </div>
+                @endif
 
                 <div class="admin-field">
-                    <label for="category">Kategori</label>
+                    <label for="category">{{ $typeConfig['category_label'] ?? 'Kategori' }}</label>
                     <input id="category" name="category" type="text" value="{{ old('category', $entry->category) }}" maxlength="100">
                     @error('category')<small class="admin-field-error">{{ $message }}</small>@enderror
                 </div>
 
                 <div class="admin-field admin-field-full">
-                    <label for="summary">Ringkasan</label>
+                    <label for="summary">{{ $typeConfig['summary_label'] ?? 'Ringkasan' }}</label>
                     <textarea id="summary" name="summary" rows="3" maxlength="600">{{ old('summary', $entry->summary) }}</textarea>
                     @error('summary')<small class="admin-field-error">{{ $message }}</small>@enderror
                 </div>
 
                 <div class="admin-field admin-field-full">
-                    <label for="body">Isi lengkap</label>
+                    <label for="body">{{ $typeConfig['body_label'] ?? 'Isi lengkap' }}</label>
                     <textarea id="body" name="body" rows="9">{{ old('body', $entry->body) }}</textarea>
                     <small>Gunakan teks biasa. Baris baru akan dipertahankan pada website.</small>
                     @error('body')<small class="admin-field-error">{{ $message }}</small>@enderror
@@ -119,19 +121,25 @@
 
                 @foreach ($typeConfig['fields'] as $name => $field)
                     @php($fieldValue = $name === 'route_key' ? $entry->route_key : data_get($entry->metadata, $name))
+                    @if ($typeConfig['type'] === 'news' && $name === 'homepage_group' && ! in_array($fieldValue, array_keys($field['options']), true))
+                        @php($fieldValue = 'auto')
+                    @endif
                     <div class="admin-field {{ $field['type'] === 'textarea' ? 'admin-field-full' : '' }}">
                         <label for="metadata-{{ $name }}">{{ $field['label'] }} @if ($field['required'])<span>*</span>@endif</label>
                         @if ($field['type'] === 'textarea')
                             <textarea id="metadata-{{ $name }}" name="metadata[{{ $name }}]" rows="5" @required($field['required'])>{{ old('metadata.'.$name, $fieldValue) }}</textarea>
                         @elseif ($field['type'] === 'select')
                             <select id="metadata-{{ $name }}" name="metadata[{{ $name }}]" @required($field['required'])>
-                                <option value="">Pilih tampilan</option>
+                                <option value="">{{ $typeConfig['type'] === 'news' ? 'Pilih posisi' : 'Pilih tampilan' }}</option>
                                 @foreach ($field['options'] as $option => $label)
                                     <option value="{{ $option }}" @selected(old('metadata.'.$name, $fieldValue) === $option)>{{ $label }}</option>
                                 @endforeach
                             </select>
                         @else
                             <input id="metadata-{{ $name }}" name="metadata[{{ $name }}]" type="{{ $field['type'] }}" value="{{ old('metadata.'.$name, $fieldValue) }}" @required($field['required'])>
+                        @endif
+                        @if (! empty($field['help']))
+                            <small>{{ $field['help'] }}</small>
                         @endif
                         @error('metadata.'.$name)<small class="admin-field-error">{{ $message }}</small>@enderror
                     </div>
@@ -162,33 +170,37 @@
                     @error('status')<small class="admin-field-error">{{ $message }}</small>@enderror
                 </div>
 
-                <div class="admin-field">
-                    <label for="sort_order">Urutan tampil</label>
-                    <input id="sort_order" name="sort_order" type="number" value="{{ old('sort_order', $entry->sort_order ?? 0) }}">
-                    @error('sort_order')<small class="admin-field-error">{{ $message }}</small>@enderror
-                </div>
+                @if ($typeConfig['type'] !== 'principal_welcome')
+                    <div class="admin-field">
+                        <label for="sort_order">Urutan tampil</label>
+                        <input id="sort_order" name="sort_order" type="number" value="{{ old('sort_order', $entry->sort_order ?? 0) }}">
+                        @error('sort_order')<small class="admin-field-error">{{ $message }}</small>@enderror
+                    </div>
 
-                <div class="admin-field">
-                    <label for="published_at">Tanggal publikasi</label>
-                    <input id="published_at" name="published_at" type="datetime-local" value="{{ old('published_at', $entry->published_at?->format('Y-m-d\TH:i')) }}">
-                    @error('published_at')<small class="admin-field-error">{{ $message }}</small>@enderror
-                </div>
+                    <div class="admin-field">
+                        <label for="published_at">Tanggal publikasi</label>
+                        <input id="published_at" name="published_at" type="datetime-local" min="1970-01-02T00:00" max="2038-01-18T23:59" value="{{ old('published_at', $entry->published_at?->format('Y-m-d\TH:i')) }}">
+                        @error('published_at')<small class="admin-field-error">{{ $message }}</small>@enderror
+                    </div>
 
-                <label class="admin-checkbox-label admin-field">
-                    <input type="hidden" name="featured" value="0">
-                    <input type="checkbox" name="featured" value="1" @checked(old('featured', $entry->featured))>
-                    <span>Tandai sebagai unggulan</span>
-                </label>
+                    @if ($typeConfig['type'] !== 'news')
+                        <label class="admin-checkbox-label admin-field">
+                            <input type="hidden" name="featured" value="0">
+                            <input type="checkbox" name="featured" value="1" @checked(old('featured', $entry->featured))>
+                            <span>Tandai sebagai unggulan</span>
+                        </label>
+                    @endif
 
-                <div class="admin-field admin-field-full admin-form-section-title"><h3>Pengaturan SEO (opsional)</h3></div>
-                <div class="admin-field">
-                    <label for="meta_title">SEO title</label>
-                    <input id="meta_title" name="meta_title" type="text" value="{{ old('meta_title', $entry->meta_title) }}" maxlength="180">
-                </div>
-                <div class="admin-field">
-                    <label for="meta_description">Meta description</label>
-                    <textarea id="meta_description" name="meta_description" rows="3" maxlength="320">{{ old('meta_description', $entry->meta_description) }}</textarea>
-                </div>
+                    <div class="admin-field admin-field-full admin-form-section-title"><h3>Pengaturan SEO (opsional)</h3></div>
+                    <div class="admin-field">
+                        <label for="meta_title">SEO title</label>
+                        <input id="meta_title" name="meta_title" type="text" value="{{ old('meta_title', $entry->meta_title) }}" maxlength="180">
+                    </div>
+                    <div class="admin-field">
+                        <label for="meta_description">Meta description</label>
+                        <textarea id="meta_description" name="meta_description" rows="3" maxlength="320">{{ old('meta_description', $entry->meta_description) }}</textarea>
+                    </div>
+                @endif
             </div>
         @endif
 

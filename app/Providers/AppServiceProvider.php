@@ -2,7 +2,7 @@
 
 namespace App\Providers;
 
-use App\Models\ContentEntry;
+use App\Models\Program;
 use App\Support\SiteConfiguration;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
@@ -37,9 +37,8 @@ class AppServiceProvider extends ServiceProvider
             $view->with('siteSettings', app(SiteConfiguration::class)->all());
             $view->with(
                 'navigationPrograms',
-                ContentEntry::query()
+                Program::query()
                     ->published()
-                    ->where('type', 'program')
                     ->orderBy('sort_order')
                     ->orderBy('id')
                     ->get(),

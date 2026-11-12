@@ -3,8 +3,10 @@
 namespace Tests\Feature;
 
 use App\Models\Admin;
-use App\Models\ContentEntry;
 use App\Models\MediaAsset;
+use App\Models\NewsArticle;
+use App\Models\Program;
+use App\Models\SiteSetting;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Hash;
@@ -53,6 +55,33 @@ class MediaManagerTest extends TestCase
             ->assertSee('school.jpg');
     }
 
+    public function test_media_manager_indexes_local_images_without_treating_text_settings_as_paths(): void
+    {
+        Storage::fake('public');
+        $admin = $this->createAdmin();
+        $path = UploadedFile::fake()->image('school.jpg')->storePublicly('cms/news', 'public');
+
+        NewsArticle::query()->create([
+            'title' => 'Berita Sekolah',
+            'slug' => 'berita-sekolah-media-index',
+            'image_path' => $path,
+        ]);
+        SiteSetting::query()->create([
+            'key' => 'home.admissions.steps',
+            'group' => 'home',
+            'value' => json_encode("Isi formulir|Lengkapi data diri\nKirim berkas|Unggah dokumen", JSON_THROW_ON_ERROR),
+        ]);
+
+        $this->actingAs($admin, 'admin')
+            ->get(route('admin.media.index'))
+            ->assertOk();
+
+        $this->assertDatabaseHas('media_assets', [
+            'original_path' => $path,
+            'media_type' => 'image',
+        ]);
+    }
+
     public function test_admin_can_replace_a_media_asset_without_breaking_content_references(): void
     {
         Storage::fake('public');
@@ -63,13 +92,18 @@ class MediaManagerTest extends TestCase
             'quality' => 'optimized',
         ]);
         $oldAsset = MediaAsset::query()->findOrFail($oldResponse->json('id'));
-        $entry = ContentEntry::query()->create([
-            'type' => 'news',
+        $entry = NewsArticle::query()->create([
             'title' => 'Berita Media',
             'slug' => 'berita-media',
             'image_path' => $oldAsset->publicPath(),
             'status' => 'published',
             'published_at' => now(),
+        ]);
+        $program = Program::query()->create([
+            'title' => 'Program Media',
+            'slug' => 'program-media',
+            'image_path' => $oldAsset->publicPath(),
+            'status' => 'published',
         ]);
 
         $response = $this->actingAs($admin, 'admin')->postJson(route('admin.media.store'), [
@@ -83,6 +117,7 @@ class MediaManagerTest extends TestCase
             ->assertJsonPath('replacement_cleanup_pending', false);
         $replacement = MediaAsset::query()->findOrFail($response->json('id'));
         $this->assertSame($replacement->publicPath(), $entry->fresh()->image_path);
+        $this->assertSame($replacement->publicPath(), $program->fresh()->image_path);
         $this->assertDatabaseMissing('media_assets', ['id' => $oldAsset->id]);
         Storage::disk('public')->assertMissing($oldAsset->original_path);
         Storage::disk('public')->assertExists($replacement->publicPath());
@@ -98,8 +133,7 @@ class MediaManagerTest extends TestCase
             'quality' => 'optimized',
         ]);
         $asset = MediaAsset::query()->findOrFail($response->json('id'));
-        ContentEntry::query()->create([
-            'type' => 'news',
+        NewsArticle::query()->create([
             'title' => 'Berita Aktif',
             'slug' => 'berita-aktif',
             'image_path' => $asset->publicPath(),

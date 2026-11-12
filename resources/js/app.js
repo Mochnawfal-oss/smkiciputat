@@ -30,6 +30,20 @@ document.addEventListener('DOMContentLoaded', () => {
         easing: 'ease-out-cubic',
     });
 
+    document.querySelectorAll('[data-copy-article-link]').forEach((button) => {
+        const status = document.querySelector('[data-copy-article-status]');
+
+        button.addEventListener('click', async () => {
+            try {
+                await navigator.clipboard.writeText(button.dataset.copyArticleLink);
+                status.textContent = 'Tautan berhasil disalin.';
+            } catch (error) {
+                status.textContent = 'Tautan tidak dapat disalin. Salin alamat halaman dari browser.';
+                console.error('Gagal menyalin tautan artikel.', error);
+            }
+        });
+    });
+
     const programAccordion = document.querySelector('[data-program-accordion]');
 
     if (programAccordion) {
@@ -229,6 +243,91 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
+    const featuredNewsRotator = document.querySelector('[data-news-featured-rotator]');
+
+    if (featuredNewsRotator) {
+        const featuredSlides = [...featuredNewsRotator.querySelectorAll('[data-news-featured-slide]')];
+        const featuredControls = [
+            ...featuredNewsRotator.querySelectorAll('[data-news-featured-direction]'),
+        ];
+
+        if (featuredSlides.length > 1) {
+            const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+            let activeSlideIndex = featuredSlides.findIndex((slide) => slide.classList.contains('is-active'));
+            let rotationTimer;
+            let pointerIsOver = false;
+            let focusIsWithin = false;
+
+            const clearRotation = () => {
+                if (rotationTimer !== undefined) {
+                    window.clearInterval(rotationTimer);
+                    rotationTimer = undefined;
+                }
+            };
+
+            const activateSlide = (slideIndex) => {
+                activeSlideIndex = (slideIndex + featuredSlides.length) % featuredSlides.length;
+
+                featuredSlides.forEach((slide, index) => {
+                    const isActive = index === activeSlideIndex;
+
+                    slide.classList.toggle('is-active', isActive);
+                    slide.setAttribute('aria-hidden', String(!isActive));
+                });
+            };
+
+            const startRotation = () => {
+                clearRotation();
+
+                if (prefersReducedMotion.matches || document.hidden || pointerIsOver || focusIsWithin) {
+                    return;
+                }
+
+                rotationTimer = window.setInterval(() => {
+                    activateSlide(activeSlideIndex + 1);
+                }, 5000);
+            };
+
+            featuredControls.forEach((button) => {
+                button.addEventListener('click', () => {
+                    const direction = button.dataset.newsFeaturedDirection === 'previous' ? -1 : 1;
+
+                    activateSlide(activeSlideIndex + direction);
+                    startRotation();
+                });
+            });
+
+            featuredNewsRotator.addEventListener('pointerenter', (event) => {
+                if (event.pointerType === 'mouse') {
+                    pointerIsOver = true;
+                    clearRotation();
+                }
+            });
+
+            featuredNewsRotator.addEventListener('pointerleave', (event) => {
+                if (event.pointerType === 'mouse') {
+                    pointerIsOver = false;
+                    startRotation();
+                }
+            });
+
+            featuredNewsRotator.addEventListener('focusin', () => {
+                focusIsWithin = true;
+                clearRotation();
+            });
+
+            featuredNewsRotator.addEventListener('focusout', (event) => {
+                if (!featuredNewsRotator.contains(event.relatedTarget)) {
+                    focusIsWithin = false;
+                    startRotation();
+                }
+            });
+
+            document.addEventListener('visibilitychange', startRotation);
+            startRotation();
+        }
+    }
+
     const newsCarousel = document.querySelector('[data-news-track]');
 
     if (newsCarousel) {
@@ -377,7 +476,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const closeAllDropdowns = () => {
         dropdowns.forEach((dropdown) => {
-            dropdown.classList.remove('open');
+            dropdown.classList.remove('open', 'hover-open');
             dropdown.querySelector('.dropdown-toggle')
                 ?.setAttribute('aria-expanded', 'false');
         });
@@ -404,32 +503,66 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Dropdown melalui klik (khusus mobile atau saat toggle dropdown diklik)
+    // Hover membuka dropdown di desktop; klik mempertahankan status toggle.
     dropdowns.forEach((dropdown) => {
         const toggle = dropdown.querySelector('.dropdown-toggle');
         if (!toggle) return;
 
-        toggle.addEventListener('click', (event) => {
-            const isMobile = window.innerWidth <= 900;
-            const href = toggle.getAttribute('href') || '';
-            const isAnchorOnly = href === '#' || href === '' || href.startsWith('/#');
-
-            if (isMobile || isAnchorOnly) {
-                event.preventDefault();
+        dropdown.addEventListener('pointerenter', (event) => {
+            if (
+                event.pointerType !== 'mouse' ||
+                window.innerWidth <= 1100 ||
+                !window.matchMedia('(hover: hover) and (pointer: fine)').matches
+            ) {
+                return;
             }
+
+            dropdowns.forEach((item) => {
+                if (item !== dropdown) {
+                    item.classList.remove('open', 'hover-open');
+                    item.querySelector('.dropdown-toggle')
+                        ?.setAttribute('aria-expanded', 'false');
+                }
+            });
+
+            dropdown.classList.add('hover-open');
+            toggle.setAttribute('aria-expanded', 'true');
+        });
+
+        dropdown.addEventListener('pointerleave', (event) => {
+            if (event.pointerType !== 'mouse') {
+                return;
+            }
+
+            dropdown.classList.remove('hover-open');
+            toggle.setAttribute('aria-expanded', String(dropdown.classList.contains('open')));
+        });
+
+        toggle.addEventListener('click', (event) => {
+            event.preventDefault();
 
             const willOpen = !dropdown.classList.contains('open');
 
             dropdowns.forEach((item) => {
                 if (item !== dropdown) {
-                    item.classList.remove('open');
+                    item.classList.remove('open', 'hover-open');
                     item.querySelector('.dropdown-toggle')
                         ?.setAttribute('aria-expanded', 'false');
                 }
             });
 
             dropdown.classList.toggle('open', willOpen);
-            toggle.setAttribute('aria-expanded', String(willOpen));
+            toggle.setAttribute(
+                'aria-expanded',
+                String(willOpen || dropdown.classList.contains('hover-open')),
+            );
+        });
+
+        toggle.addEventListener('keydown', (event) => {
+            if (event.key === ' ') {
+                event.preventDefault();
+                toggle.click();
+            }
         });
     });
 
@@ -461,8 +594,16 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // Tutup mobile menu saat resize ke layar desktop
+    // Reset hover di layar kecil dan tutup menu seluler saat kembali ke desktop.
     window.addEventListener('resize', () => {
+        if (window.innerWidth <= 1100) {
+            dropdowns.forEach((dropdown) => {
+                dropdown.classList.remove('hover-open');
+                dropdown.querySelector('.dropdown-toggle')
+                    ?.setAttribute('aria-expanded', String(dropdown.classList.contains('open')));
+            });
+        }
+
         if (window.innerWidth > 900 && navMenu.classList.contains('open')) {
             closeMobileMenu();
         }
