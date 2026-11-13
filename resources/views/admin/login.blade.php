@@ -12,7 +12,7 @@
         <img src="{{ asset('images/logo/logo.PNG') }}" alt="Logo SMK Islamiyah Ciputat" class="admin-login-logo">
         <p class="admin-login-eyebrow">PENGELOLAAN WEBSITE</p>
         <h1>Masuk ke Admin Panel</h1>
-        <p class="admin-login-description">Gunakan akun administrator untuk mengelola konten sekolah.</p>
+        <p class="admin-login-description">Akun dibuat oleh Superadmin. Peran akun menentukan menu dan akses yang tersedia; peran tidak dipilih saat login.</p>
 
         @if (session('success'))
             <div class="admin-alert admin-alert-success" role="status">{{ session('success') }}</div>
@@ -40,6 +40,10 @@
 
             <button type="submit" class="admin-button admin-button-primary admin-login-submit">Masuk</button>
         </form>
+
+        @if ($canRegisterSuperAdmin)
+            <a href="{{ route('admin.register') }}" class="admin-login-back">Pendaftaran Superadmin pertama untuk testing</a>
+        @endif
 
         <a href="{{ route('home') }}" class="admin-login-back">← Kembali ke website</a>
     </main>

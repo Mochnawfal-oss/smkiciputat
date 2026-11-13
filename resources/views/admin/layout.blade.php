@@ -30,12 +30,14 @@
             <a href="{{ route('admin.content.index', 'news') }}" class="admin-nav-link {{ request()->route('type') === 'news' ? 'is-active' : '' }}"><span aria-hidden="true">▤</span> Berita</a>
             <a href="{{ route('admin.content.index', 'jobs') }}" class="admin-nav-link {{ request()->route('type') === 'jobs' ? 'is-active' : '' }}"><span aria-hidden="true">▣</span> Lowongan BKK</a>
             <a href="{{ route('admin.content.index', 'gallery') }}" class="admin-nav-link {{ request()->route('type') === 'gallery' ? 'is-active' : '' }}"><span aria-hidden="true">▧</span> Galeri</a>
-            <p class="admin-nav-caption">Pengelolaan</p>
-            <a href="{{ route('admin.media.index') }}" class="admin-nav-link {{ request()->routeIs('admin.media.*') ? 'is-active' : '' }}"><span aria-hidden="true">▣</span> Media Manager</a>
-            <a href="{{ route('admin.settings.index') }}" class="admin-nav-link {{ request()->routeIs('admin.settings.*') ? 'is-active' : '' }}"><span aria-hidden="true">⚙</span> Pengaturan Website</a>
+            @if (! auth('admin')->user()?->isEditor())
+                <p class="admin-nav-caption">Pengelolaan</p>
+                <a href="{{ route('admin.media.index') }}" class="admin-nav-link {{ request()->routeIs('admin.media.*') ? 'is-active' : '' }}"><span aria-hidden="true">▣</span> Media Manager</a>
+                <a href="{{ route('admin.settings.index') }}" class="admin-nav-link {{ request()->routeIs('admin.settings.*') ? 'is-active' : '' }}"><span aria-hidden="true">⚙</span> Pengaturan Website</a>
+            @endif
             @if (auth('admin')->user()?->isSuperAdmin())
                 <a href="{{ route('admin.admins.index') }}" class="admin-nav-link {{ request()->routeIs('admin.admins.*') ? 'is-active' : '' }}"><span aria-hidden="true">♧</span> Manajemen Admin</a>
-            @else
+            @elseif (! auth('admin')->user()?->isEditor())
                 <a href="{{ route('admin.admins.edit', auth('admin')->user()) }}" class="admin-nav-link {{ request()->routeIs('admin.admins.*') ? 'is-active' : '' }}"><span aria-hidden="true">♧</span> Profil Saya</a>
             @endif
         </nav>
@@ -64,7 +66,7 @@
                 <span class="admin-avatar">{{ mb_substr(auth('admin')->user()->name, 0, 1) }}</span>
                 <span>
                     <strong>{{ auth('admin')->user()->name }}</strong>
-                    <small>{{ auth('admin')->user()?->isSuperAdmin() ? 'Superadmin' : 'Administrator' }} ({{ auth('admin')->user()->username }})</small>
+                    <small>{{ auth('admin')->user()->roleLabel() }} ({{ auth('admin')->user()->username }})</small>
                 </span>
             </div>
         </header>

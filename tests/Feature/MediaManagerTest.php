@@ -55,6 +55,32 @@ class MediaManagerTest extends TestCase
             ->assertSee('school.jpg');
     }
 
+    public function test_editor_can_upload_content_images_but_not_videos_or_replace_assets(): void
+    {
+        Storage::fake('public');
+        $editor = $this->createAdmin('contenteditor', 'editor');
+
+        $this->actingAs($editor, 'admin')
+            ->postJson(route('admin.media.store'), [
+                'file' => UploadedFile::fake()->image('content-photo.jpg', 600, 400),
+                'category' => 'news',
+                'quality' => 'optimized',
+            ])
+            ->assertCreated()
+            ->assertJsonPath('type', 'image');
+
+        $this->actingAs($editor, 'admin')
+            ->postJson(route('admin.media.uploads.store'), [
+                'filename' => 'school-video.mp4',
+                'mime_type' => 'video/mp4',
+                'size' => 1024,
+                'media_type' => 'video',
+                'category' => 'general',
+                'quality' => 'optimized',
+            ])
+            ->assertForbidden();
+    }
+
     public function test_media_manager_indexes_local_images_without_treating_text_settings_as_paths(): void
     {
         Storage::fake('public');
@@ -254,12 +280,12 @@ class MediaManagerTest extends TestCase
             ->assertInvalid(['file']);
     }
 
-    private function createAdmin(string $username = 'editor'): Admin
+    private function createAdmin(string $username = 'editor', string $role = 'superadmin'): Admin
     {
         return Admin::query()->create([
             'name' => 'CMS Editor',
             'username' => $username,
-            'role' => 'superadmin',
+            'role' => $role,
             'email' => $username.'@example.test',
             'password' => Hash::make('Secure-password-1234'),
         ]);

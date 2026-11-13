@@ -9,11 +9,13 @@ use App\Models\NewsArticle;
 use App\Models\PrincipalWelcome;
 use App\Models\SiteSetting;
 use App\Models\Teacher;
+use Database\Seeders\CmsContentSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 class CmsAdminTest extends TestCase
@@ -41,6 +43,76 @@ class CmsAdminTest extends TestCase
             ->assertRedirect(route('admin.login'));
 
         $this->assertGuest('admin');
+    }
+
+    public function test_first_superadmin_can_register_once_in_testing_and_is_signed_in(): void
+    {
+        $this->get(route('admin.login'))
+            ->assertOk()
+            ->assertSee(route('admin.register'));
+
+        $this->post(route('admin.register.store'), [
+            'name' => 'Superadmin Testing',
+            'username' => 'superadmintesting',
+            'email' => 'superadmin@example.test',
+            'password' => 'Secure-password-1234',
+            'password_confirmation' => 'Secure-password-1234',
+        ])->assertRedirect(route('admin.dashboard'))
+            ->assertSessionHas('success', 'Akun Superadmin pertama berhasil dibuat.');
+
+        $this->assertDatabaseHas('admins', [
+            'username' => 'superadmintesting',
+            'role' => 'superadmin',
+        ]);
+        $this->assertAuthenticated('admin');
+
+        $this->get(route('admin.register'))
+            ->assertNotFound();
+
+        $this->post(route('admin.logout'))
+            ->assertRedirect(route('admin.login'));
+
+        $this->get(route('admin.login'))
+            ->assertOk()
+            ->assertDontSee(route('admin.register'));
+    }
+
+    public function test_first_superadmin_registration_is_disabled_outside_local_and_testing(): void
+    {
+        config(['app.env' => 'production']);
+
+        $this->get(route('admin.register'))
+            ->assertNotFound();
+
+        $this->post(route('admin.register.store'), [
+            'name' => 'Superadmin Production',
+            'username' => 'superadminproduction',
+            'password' => 'Secure-password-1234',
+            'password_confirmation' => 'Secure-password-1234',
+        ])->assertNotFound();
+
+        $this->assertDatabaseMissing('admins', [
+            'username' => 'superadminproduction',
+        ]);
+    }
+
+    public function test_first_superadmin_registration_is_disabled_when_any_admin_account_already_exists(): void
+    {
+        $this->createAdmin('admin');
+
+        $this->get(route('admin.register'))
+            ->assertNotFound();
+
+        $this->post(route('admin.register.store'), [
+            'name' => 'Superadmin Kedua',
+            'username' => 'superadminkedua',
+            'password' => 'Secure-password-1234',
+            'password_confirmation' => 'Secure-password-1234',
+        ])->assertNotFound();
+
+        $this->assertDatabaseMissing('admins', [
+            'username' => 'superadminkedua',
+        ]);
     }
 
     public function test_admin_can_publish_a_program_that_appears_on_public_pages(): void
@@ -519,6 +591,81 @@ class CmsAdminTest extends TestCase
         );
     }
 
+    #[DataProvider('settingsSections')]
+    public function test_admin_can_save_settings_in_each_section(
+        string $section,
+        array $settings,
+        string $key,
+        string $expectedValue,
+    ): void {
+        $admin = $this->createAdmin();
+
+        $this->actingAs($admin, 'admin')
+            ->put(route('admin.settings.update'), [
+                'section' => $section,
+                'settings' => [$section => $settings],
+            ])
+            ->assertRedirect(route('admin.settings.index', ['section' => $section]));
+
+        $this->assertSame(
+            $expectedValue,
+            json_decode(SiteSetting::query()->findOrFail($key)->value, true, flags: JSON_THROW_ON_ERROR),
+        );
+    }
+
+    public static function settingsSections(): array
+    {
+        return [
+            'identity' => ['identity', ['school_name' => 'SMK Uji'], 'identity.school_name', 'SMK Uji'],
+            'navbar' => ['navbar', ['home' => ['label' => 'Awal']], 'navbar.home.label', 'Awal'],
+            'homepage' => ['home', ['hero' => ['slogan' => 'Belajar bersama']], 'home.hero.slogan', 'Belajar bersama'],
+            'about' => ['about', ['title' => 'Profil Sekolah'], 'about.title', 'Profil Sekolah'],
+            'teachers' => ['teachers', ['title' => 'Pendidik'], 'teachers.title', 'Pendidik'],
+            'bkk' => ['bkk', ['title' => 'Peluang Kerja'], 'bkk.title', 'Peluang Kerja'],
+            'spmb' => ['spmb', ['title' => 'Penerimaan Siswa'], 'spmb.title', 'Penerimaan Siswa'],
+            'footer' => ['footer', ['description' => 'Informasi sekolah'], 'footer.description', 'Informasi sekolah'],
+            'seo' => ['seo', ['title' => 'SMK Islamiyah Ciputat'], 'seo.title', 'SMK Islamiyah Ciputat'],
+        ];
+    }
+
+    public function test_homepage_renders_admin_managed_teacher_section_copy(): void
+    {
+        SiteSetting::query()->create([
+            'key' => 'home.teachers.heading',
+            'group' => 'home',
+            'value' => json_encode('Pendidik Unggul', JSON_THROW_ON_ERROR),
+        ]);
+        SiteSetting::query()->create([
+            'key' => 'home.teachers.description',
+            'group' => 'home',
+            'value' => json_encode('Mendampingi masa depan siswa.', JSON_THROW_ON_ERROR),
+        ]);
+
+        $this->get(route('home'))
+            ->assertOk()
+            ->assertSee('Pendidik Unggul')
+            ->assertSee('Mendampingi masa depan siswa.');
+    }
+
+    public function test_teacher_page_renders_admin_managed_title_and_description(): void
+    {
+        SiteSetting::query()->create([
+            'key' => 'teachers.title',
+            'group' => 'teachers',
+            'value' => json_encode('Tenaga Pendidik Kami', JSON_THROW_ON_ERROR),
+        ]);
+        SiteSetting::query()->create([
+            'key' => 'teachers.description',
+            'group' => 'teachers',
+            'value' => json_encode('Kenali para pendidik sekolah.', JSON_THROW_ON_ERROR),
+        ]);
+
+        $this->get(route('teachers'))
+            ->assertOk()
+            ->assertSee('Tenaga Pendidik Kami')
+            ->assertSee('Kenali para pendidik sekolah.');
+    }
+
     public function test_public_news_escapes_admin_provided_html(): void
     {
         $article = NewsArticle::query()->create([
@@ -579,6 +726,120 @@ class CmsAdminTest extends TestCase
         $this->assertDatabaseMissing('admins', [
             'id' => $created->id,
         ]);
+    }
+
+    public function test_superadmin_can_create_editor_but_cannot_create_another_superadmin(): void
+    {
+        $superadmin = $this->createAdmin('superadmin');
+
+        $this->actingAs($superadmin, 'admin')
+            ->get(route('admin.admins.create'))
+            ->assertOk()
+            ->assertSee('Editor — konten dan unggah foto konten')
+            ->assertDontSee('value="superadmin"', false);
+
+        $this->actingAs($superadmin, 'admin')
+            ->post(route('admin.admins.store'), [
+                'name' => 'Editor Konten',
+                'username' => 'editorkonten',
+                'role' => 'editor',
+                'password' => 'password1234',
+                'password_confirmation' => 'password1234',
+            ])
+            ->assertRedirect(route('admin.admins.index'));
+
+        $this->assertDatabaseHas('admins', [
+            'username' => 'editorkonten',
+            'role' => 'editor',
+        ]);
+
+        $this->actingAs($superadmin, 'admin')
+            ->from(route('admin.admins.create'))
+            ->post(route('admin.admins.store'), [
+                'name' => 'Superadmin Kedua',
+                'username' => 'superadminkedua',
+                'role' => 'superadmin',
+                'password' => 'password1234',
+                'password_confirmation' => 'password1234',
+            ])
+            ->assertRedirect(route('admin.admins.create'))
+            ->assertSessionHasErrors('role');
+
+        $this->assertDatabaseMissing('admins', [
+            'username' => 'superadminkedua',
+        ]);
+        $this->assertSame(1, Admin::query()->where('role', 'superadmin')->count());
+    }
+
+    public function test_admin_create_command_allows_only_the_first_superadmin(): void
+    {
+        $this->artisan('admin:create')
+            ->expectsQuestion('Nama admin', 'Super Administrator')
+            ->expectsQuestion('Username admin', 'superadminpertama')
+            ->expectsQuestion('Role / Peran', 'superadmin')
+            ->expectsQuestion('Email admin (opsional, tekan Enter untuk lewati)', '')
+            ->expectsQuestion('Kata sandi (minimal 8 karakter)', 'Secure-password-1234')
+            ->expectsQuestion('Ulangi kata sandi', 'Secure-password-1234')
+            ->assertExitCode(0);
+
+        $this->assertDatabaseHas('admins', [
+            'username' => 'superadminpertama',
+            'role' => 'superadmin',
+        ]);
+
+        $this->artisan('admin:create')
+            ->expectsQuestion('Nama admin', 'Editor Konten')
+            ->expectsQuestion('Username admin', 'editorpertama')
+            ->expectsQuestion('Role / Peran', 'editor')
+            ->expectsQuestion('Email admin (opsional, tekan Enter untuk lewati)', '')
+            ->expectsQuestion('Kata sandi (minimal 8 karakter)', 'Secure-password-1234')
+            ->expectsQuestion('Ulangi kata sandi', 'Secure-password-1234')
+            ->assertExitCode(0);
+
+        $this->assertDatabaseHas('admins', [
+            'username' => 'editorpertama',
+            'role' => 'editor',
+        ]);
+        $this->assertSame(1, Admin::query()->where('role', 'superadmin')->count());
+    }
+
+    public function test_cms_content_seeder_does_not_create_a_predictable_admin_account(): void
+    {
+        $this->seed(CmsContentSeeder::class);
+
+        $this->assertDatabaseMissing('admins', [
+            'username' => 'superadmin',
+        ]);
+    }
+
+    public function test_editor_can_manage_content_but_cannot_access_admin_features(): void
+    {
+        $editor = $this->createAdmin('editor');
+
+        $this->actingAs($editor, 'admin')
+            ->get(route('admin.dashboard'))
+            ->assertOk()
+            ->assertSee('Peran Anda: <strong>Editor</strong>', false)
+            ->assertSee('Editor dapat mengunggah foto untuk konten')
+            ->assertDontSee('href="'.route('admin.media.index').'"', false)
+            ->assertDontSee('href="'.route('admin.settings.index').'"', false)
+            ->assertDontSee('Manajemen Admin');
+
+        $this->actingAs($editor, 'admin')
+            ->get(route('admin.content.index', 'programs'))
+            ->assertOk();
+
+        $this->actingAs($editor, 'admin')
+            ->get(route('admin.settings.index'))
+            ->assertForbidden();
+
+        $this->actingAs($editor, 'admin')
+            ->get(route('admin.media.index'))
+            ->assertForbidden();
+
+        $this->actingAs($editor, 'admin')
+            ->get(route('admin.admins.index'))
+            ->assertForbidden();
     }
 
     public function test_regular_admin_cannot_access_user_management(): void

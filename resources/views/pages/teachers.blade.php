@@ -20,9 +20,9 @@
                         </svg>
                         PARA PENDIDIK
                     </span>
-                    <h1 id="educators-page-title">Tenaga Pendidik Kami</h1>
+                    <h1 id="educators-page-title">{{ $siteSettings['teachers.title'] }}</h1>
                     <span class="educators-page-title-rule" aria-hidden="true"></span>
-                    <p class="educators-page-intro-description">Guru-guru profesional yang berkomitmen membimbing, mendidik, dan mengembangkan potensi setiap siswa.</p>
+                    <p class="educators-page-intro-description">{{ $siteSettings['teachers.description'] }}</p>
                 </div>
                 <figure class="educators-page-hero-image">
                     <img

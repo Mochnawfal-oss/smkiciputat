@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Admin;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -17,7 +18,10 @@ class AdminLoginController extends Controller
             return redirect()->route('admin.dashboard');
         }
 
-        return view('admin.login');
+        return view('admin.login', [
+            'canRegisterSuperAdmin' => in_array(config('app.env'), ['local', 'testing'], true)
+                && Admin::query()->doesntExist(),
+        ]);
     }
 
     public function store(Request $request): RedirectResponse

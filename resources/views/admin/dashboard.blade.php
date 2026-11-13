@@ -8,10 +8,17 @@
     <div class="admin-page-intro">
         <div>
             <h2>Selamat datang, {{ auth('admin')->user()->name }}</h2>
-            <p>Kelola informasi publik SMK Islamiyah Ciputat dari satu tempat.</p>
+            <p>Peran Anda: <strong>{{ auth('admin')->user()->roleLabel() }}</strong>. {{ auth('admin')->user()->roleDescription() }}</p>
         </div>
         <a href="{{ route('home') }}" target="_blank" rel="noopener" class="admin-button admin-button-secondary">Lihat website <span aria-hidden="true">↗</span></a>
     </div>
+
+    @if (auth('admin')->user()->isSuperAdmin())
+        <div class="admin-quick-actions">
+            <a href="{{ route('admin.admins.create') }}" class="admin-button admin-button-primary">+ Buat akun Admin / Editor</a>
+            <a href="{{ route('admin.admins.index') }}" class="admin-button admin-button-secondary">Manajemen Admin</a>
+        </div>
+    @endif
 
     <div class="admin-stat-grid">
         @foreach ([

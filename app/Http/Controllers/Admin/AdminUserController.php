@@ -40,7 +40,7 @@ class AdminUserController extends Controller
             'name' => ['required', 'string', 'max:120'],
             'username' => ['required', 'string', 'max:60', 'alpha_dash', 'unique:admins,username'],
             'email' => ['nullable', 'email', 'max:255', 'unique:admins,email'],
-            'role' => ['required', 'string', Rule::in(['superadmin', 'admin'])],
+            'role' => ['required', 'string', Rule::in(['admin', 'editor'])],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
         ]);
 
@@ -71,16 +71,17 @@ class AdminUserController extends Controller
         ];
 
         if ($isSuperAdmin) {
-            $rules['role'] = ['required', 'string', Rule::in(['superadmin', 'admin'])];
+            $rules['role'] = [
+                'sometimes',
+                'required',
+                'string',
+                Rule::in($admin->isSuperAdmin() ? ['superadmin'] : ['admin', 'editor']),
+            ];
         }
 
         $validated = $request->validate($rules);
 
-        if ($isSuperAdmin && isset($validated['role'])) {
-            if ($admin->isSuperAdmin() && $validated['role'] !== 'superadmin' && Admin::query()->where('role', 'superadmin')->count() <= 1) {
-                return back()->withInput()->withErrors(['role' => 'Setidaknya harus ada satu akun Superadmin aktif.']);
-            }
-        } else {
+        if (! $isSuperAdmin || ! isset($validated['role'])) {
             $validated['role'] = $admin->role;
         }
 

@@ -41,6 +41,16 @@ php artisan boost:install
 
 Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
 
+## Admin roles
+
+The admin panel does not provide public self-registration. Accounts are created by the Superadmin from **Manajemen Admin**:
+
+- **Superadmin** has full access and manages Admin and Editor accounts. Only one Superadmin is allowed.
+- **Admin** manages content, website settings, and the media library.
+- **Editor** manages website content and can upload images for content, but cannot access settings, the media library, or admin accounts.
+
+For local/testing, when no admin account exists, the login page offers a one-time **Pendaftaran Superadmin pertama** link. After registration, the form closes and the new account is signed in. In production, create the initial Superadmin with `php artisan admin:create` instead. Once a Superadmin exists, the command only offers Admin and Editor roles; additional accounts should be created in the panel.
+
 ## Contributing
 
 Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).

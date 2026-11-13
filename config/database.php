@@ -116,8 +116,8 @@ return [
 
         'teachers' => [
             'driver' => env('TEACHERS_DB_CONNECTION', 'sqlite'),
-            'url' => env('TEACHERS_DB_URL', env('DB_URL')),
-            'database' => env('TEACHERS_DB_DATABASE', env('DB_DATABASE', database_path('teachers.sqlite'))),
+            'url' => env('TEACHERS_DB_URL'),
+            'database' => env('TEACHERS_DB_DATABASE', database_path('teachers.sqlite')),
             'host' => env('TEACHERS_DB_HOST', env('DB_HOST', '127.0.0.1')),
             'port' => env('TEACHERS_DB_PORT', env('DB_PORT', '3306')),
             'username' => env('TEACHERS_DB_USERNAME', env('DB_USERNAME', 'root')),

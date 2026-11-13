@@ -31,6 +31,13 @@ class MediaUploadController extends Controller
             'source_mime_type' => ['nullable', 'string', 'max:100'],
             'source_size' => ['nullable', 'integer', 'min:1', 'max:'.$maxBytes],
         ]);
+        if ($request->user('admin')?->isEditor()) {
+            abort_if(
+                $validated['media_type'] !== 'image' || filled($validated['replace_asset_id'] ?? null),
+                403,
+                'Editor hanya dapat mengunggah foto baru untuk konten.',
+            );
+        }
         abort_if(
             ($validated['media_type'] ?? null) === 'video' && isset($validated['source_size']),
             422,

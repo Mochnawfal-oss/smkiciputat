@@ -37,12 +37,17 @@
             <div class="admin-field">
                 <label for="role">Role / Peran <span>*</span></label>
                 @if (auth('admin')->user()?->isSuperAdmin())
-                    <select id="role" name="role" required>
-                        <option value="superadmin" @selected(old('role', $adminUser->role) === 'superadmin')>Superadmin (Akses Penuh & Kelola User)</option>
-                        <option value="admin" @selected(old('role', $adminUser->role ?? 'admin') === 'admin')>Admin (Kelola Konten & Pengaturan)</option>
-                    </select>
+                    @if ($adminUser->isSuperAdmin())
+                        <input type="text" value="Superadmin (akun tunggal)" disabled>
+                        <input type="hidden" name="role" value="superadmin">
+                    @else
+                        <select id="role" name="role" required>
+                            <option value="admin" @selected(old('role', $adminUser->role ?? 'admin') === 'admin')>Admin — konten, pengaturan, dan media</option>
+                            <option value="editor" @selected(old('role', $adminUser->role) === 'editor')>Editor — konten dan unggah foto konten</option>
+                        </select>
+                    @endif
                 @else
-                    <input type="text" value="{{ $adminUser->role === 'superadmin' ? 'Superadmin' : 'Admin' }}" disabled>
+                    <input type="text" value="{{ $adminUser->roleLabel() }}" disabled>
                     <input type="hidden" name="role" value="{{ $adminUser->role }}">
                 @endif
                 @error('role')<small class="admin-field-error">{{ $message }}</small>@enderror

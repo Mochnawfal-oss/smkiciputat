@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\Admin;
 use App\Models\ContentEntry;
 use App\Models\SiteSetting;
 use Illuminate\Database\Seeder;
@@ -57,14 +56,6 @@ class CmsContentSeeder extends Seeder
             );
         }
 
-        Admin::query()->firstOrCreate(
-            ['username' => 'superadmin'],
-            [
-                'name' => 'Super Administrator',
-                'role' => 'superadmin',
-                'password' => 'superadmin1234',
-            ],
-        );
     }
 
     /**

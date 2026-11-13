@@ -67,6 +67,9 @@ class MediaManagerController extends Controller
         $previousAsset = filled($validated['replace_asset_id'] ?? null)
             ? MediaAsset::query()->findOrFail($validated['replace_asset_id'])
             : null;
+        if ($request->user('admin')?->isEditor()) {
+            abort_if($previousAsset !== null, 403, 'Editor tidak dapat mengganti media yang sudah tersimpan.');
+        }
         $file = $request->file('file');
         $mimeType = $file->getMimeType() ?: '';
         $extension = strtolower($file->getClientOriginalExtension());
@@ -81,6 +84,14 @@ class MediaManagerController extends Controller
             'video/webm' => ['webm'],
             'video/ogg' => ['ogv', 'ogg'],
         ];
+
+        if ($request->user('admin')?->isEditor()) {
+            abort_unless(
+                isset($imageExtensions[$mimeType]) && in_array($extension, $imageExtensions[$mimeType], true),
+                403,
+                'Editor hanya dapat mengunggah foto untuk konten.',
+            );
+        }
 
         if (isset($imageExtensions[$mimeType]) && in_array($extension, $imageExtensions[$mimeType], true)) {
             abort_if($previousAsset !== null && $previousAsset->media_type !== 'image', 422, 'Jenis media pengganti harus sama dengan media saat ini.');

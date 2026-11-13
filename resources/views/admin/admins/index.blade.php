@@ -36,7 +36,7 @@
                                 <td class="admin-check-col"><input type="checkbox" name="ids[]" value="{{ $admin->id }}" data-bulk-item data-name="{{ e($admin->name) }}" aria-label="Pilih {{ $admin->name }}" @disabled($protected)></td>
                                 <td><strong>{{ $admin->name }}</strong>@if (auth('admin')->id() === $admin->id) <span class="admin-current-user">Anda</span>@endif</td>
                                 <td><code>{{ $admin->username }}</code></td>
-                                <td><span class="admin-status {{ $admin->isSuperAdmin() ? 'admin-status-published' : 'admin-status-draft' }}">{{ $admin->isSuperAdmin() ? 'Superadmin' : 'Admin' }}</span></td>
+                                <td><span class="admin-status {{ $admin->isSuperAdmin() ? 'admin-status-published' : 'admin-status-draft' }}">{{ $admin->roleLabel() }}</span></td>
                                 <td>{{ $admin->created_at->format('d M Y') }}</td>
                                 <td class="admin-table-actions">
                                     <div class="admin-row-actions">

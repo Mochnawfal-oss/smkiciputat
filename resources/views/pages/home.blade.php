@@ -201,9 +201,9 @@
                             </svg>
                             PARA PENDIDIK
                         </span>
-                        <h2 class="educator-lanyard-headline" id="teacher-section-title">Tenaga Pendidik Kami</h2>
+                        <h2 class="educator-lanyard-headline" id="teacher-section-title">{{ $siteSettings['home.teachers.heading'] }}</h2>
                         <span class="educator-lanyard-title-rule" aria-hidden="true"></span>
-                        <p class="educator-lanyard-description">Guru-guru profesional yang berkomitmen membimbing, mendidik, dan mengembangkan potensi setiap siswa.</p>
+                        <p class="educator-lanyard-description">{{ $siteSettings['home.teachers.description'] }}</p>
                         <a class="educator-lanyard-cta" href="{{ route('teachers') }}">Lihat semua tenaga pendidik <span aria-hidden="true">→</span></a>
                     </div>
                     <figure class="educator-lanyard-hero-image">
