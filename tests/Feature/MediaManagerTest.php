@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Admin;
 use App\Models\MediaAsset;
 use App\Models\NewsArticle;
+use App\Models\PrincipalWelcome;
 use App\Models\Program;
 use App\Models\SiteSetting;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -105,6 +106,45 @@ class MediaManagerTest extends TestCase
         $this->assertDatabaseHas('media_assets', [
             'original_path' => $path,
             'media_type' => 'image',
+        ]);
+    }
+
+    public function test_media_manager_does_not_duplicate_a_path_already_registered_as_an_optimized_asset(): void
+    {
+        Storage::fake('public');
+        $admin = $this->createAdmin();
+        $optimizedPath = UploadedFile::fake()
+            ->image('school.jpg')
+            ->storePublicly('cms/media/optimized', 'public');
+
+        MediaAsset::query()->create([
+            'disk' => 'public',
+            'filename' => 'school.jpg',
+            'original_path' => 'cms/media/originals/school.jpg',
+            'optimized_path' => $optimizedPath,
+            'media_type' => 'image',
+            'mime_type' => 'image/jpeg',
+            'file_size' => Storage::disk('public')->size($optimizedPath),
+            'optimized_size' => Storage::disk('public')->size($optimizedPath),
+            'width' => 100,
+            'height' => 100,
+            'quality' => 'original',
+            'category' => 'general',
+        ]);
+        PrincipalWelcome::query()->create([
+            'title' => 'Sambutan Kepala Sekolah',
+            'slug' => 'sambutan-kepala-sekolah-media-index',
+            'image_path' => $optimizedPath,
+        ]);
+
+        $this->actingAs($admin, 'admin')
+            ->get(route('admin.media.index'))
+            ->assertOk();
+
+        $this->assertDatabaseCount('media_assets', 1);
+        $this->assertDatabaseHas('media_assets', [
+            'original_path' => 'cms/media/originals/school.jpg',
+            'optimized_path' => $optimizedPath,
         ]);
     }
 

@@ -26,6 +26,9 @@ class CmsAdminTest extends TestCase
     {
         $this->get(route('admin.dashboard'))
             ->assertRedirect(route('admin.login'));
+
+        $this->get(route('admin.register.success'))
+            ->assertRedirect(route('admin.login'));
     }
 
     public function test_admin_can_sign_in_and_sign_out(): void
@@ -49,7 +52,13 @@ class CmsAdminTest extends TestCase
     {
         $this->get(route('admin.login'))
             ->assertOk()
-            ->assertSee(route('admin.register'));
+            ->assertViewIs('admin.setup-welcome')
+            ->assertSee(route('admin.register.form'));
+
+        $this->get(route('admin.register.form'))
+            ->assertOk()
+            ->assertViewIs('admin.register')
+            ->assertSee('Buat Administrator Utama');
 
         $this->post(route('admin.register.store'), [
             'name' => 'Superadmin Testing',
@@ -57,7 +66,7 @@ class CmsAdminTest extends TestCase
             'email' => 'superadmin@example.test',
             'password' => 'Secure-password-1234',
             'password_confirmation' => 'Secure-password-1234',
-        ])->assertRedirect(route('admin.dashboard'))
+        ])->assertRedirect(route('admin.register.success'))
             ->assertSessionHas('success', 'Akun Superadmin pertama berhasil dibuat.');
 
         $this->assertDatabaseHas('admins', [
@@ -66,7 +75,15 @@ class CmsAdminTest extends TestCase
         ]);
         $this->assertAuthenticated('admin');
 
+        $this->get(route('admin.register.success'))
+            ->assertOk()
+            ->assertViewIs('admin.register-success')
+            ->assertSee('Akun Superadmin')
+            ->assertSee(route('admin.dashboard'));
+
         $this->get(route('admin.register'))
+            ->assertNotFound();
+        $this->get(route('admin.register.form'))
             ->assertNotFound();
 
         $this->post(route('admin.logout'))
@@ -82,6 +99,8 @@ class CmsAdminTest extends TestCase
         config(['app.env' => 'production']);
 
         $this->get(route('admin.register'))
+            ->assertNotFound();
+        $this->get(route('admin.register.form'))
             ->assertNotFound();
 
         $this->post(route('admin.register.store'), [
@@ -124,6 +143,7 @@ class CmsAdminTest extends TestCase
                 'title' => 'Program Uji',
                 'slug' => 'program-uji',
                 'summary' => 'Deskripsi program uji.',
+                'body' => 'Deskripsi detail program uji.',
                 'status' => 'published',
                 'metadata' => [
                     'abbreviation' => 'PU',
@@ -144,7 +164,8 @@ class CmsAdminTest extends TestCase
 
         $this->get(route('program.show', 'program-uji'))
             ->assertOk()
-            ->assertSee('Deskripsi program uji.');
+            ->assertSee('Deskripsi detail program uji.')
+            ->assertDontSee('Deskripsi program uji.');
     }
 
     public function test_admin_can_publish_a_job_vacancy_to_the_dedicated_table(): void

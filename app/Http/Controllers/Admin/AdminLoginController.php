@@ -18,9 +18,15 @@ class AdminLoginController extends Controller
             return redirect()->route('admin.dashboard');
         }
 
+        $canRegisterSuperAdmin = in_array(config('app.env'), ['local', 'testing'], true)
+            && Admin::query()->doesntExist();
+
+        if ($canRegisterSuperAdmin) {
+            return view('admin.setup-welcome');
+        }
+
         return view('admin.login', [
-            'canRegisterSuperAdmin' => in_array(config('app.env'), ['local', 'testing'], true)
-                && Admin::query()->doesntExist(),
+            'canRegisterSuperAdmin' => false,
         ]);
     }
 

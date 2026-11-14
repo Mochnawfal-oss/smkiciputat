@@ -1,4 +1,4 @@
-import { createIcons, Menu, ChevronDown, ArrowUpRight, ArrowRight, GraduationCap, BookOpen, Users, UserCheck, CalendarDays, Newspaper, MapPin, Phone, Mail } from 'lucide';
+import { createIcons, Menu, ChevronDown, ArrowUpRight, ArrowRight, GraduationCap, BookOpen, Users, UserCheck, CalendarDays, Newspaper, MapPin, Phone, Mail, ShieldCheck, UserRound, AtSign, LockKeyhole, Eye, EyeOff, KeyRound, CircleAlert, Info, ArrowLeft, Check, LayoutDashboard, BriefcaseBusiness, Images, HardDrive, Settings2, UsersRound, CircleUserRound, ExternalLink, PanelLeftClose, PanelLeftOpen, LogOut, Activity } from 'lucide';
 
 import AOS from 'aos';
 import 'aos/dist/aos.css';
@@ -29,6 +29,155 @@ document.addEventListener('DOMContentLoaded', () => {
         offset: 70,
         easing: 'ease-out-cubic',
     });
+
+    createIcons({
+        icons: {
+            ShieldCheck,
+            UserRound,
+            AtSign,
+            LockKeyhole,
+            Eye,
+            EyeOff,
+            KeyRound,
+            CircleAlert,
+            Info,
+            ArrowLeft,
+            Check,
+            LayoutDashboard,
+            BriefcaseBusiness,
+            Images,
+            HardDrive,
+            Settings2,
+            UsersRound,
+            CircleUserRound,
+            ExternalLink,
+            PanelLeftClose,
+            PanelLeftOpen,
+            LogOut,
+            Activity,
+        },
+    });
+
+    const sidebarCollapseToggle = document.querySelector('[data-admin-sidebar-toggle]');
+
+    if (sidebarCollapseToggle) {
+        const collapseIcon = document.querySelector('[data-sidebar-collapse-icon]');
+        const expandIcon = document.querySelector('[data-sidebar-expand-icon]');
+
+        sidebarCollapseToggle.addEventListener('click', () => {
+            const isCollapsed = document.body.classList.toggle('admin-sidebar-collapsed');
+
+            if (collapseIcon) {
+                collapseIcon.hidden = isCollapsed;
+            }
+
+            if (expandIcon) {
+                expandIcon.hidden = !isCollapsed;
+            }
+
+            sidebarCollapseToggle.setAttribute('aria-expanded', String(!isCollapsed));
+            sidebarCollapseToggle.setAttribute('aria-label', isCollapsed ? 'Perluas sidebar' : 'Ciutkan sidebar');
+            sidebarCollapseToggle.setAttribute('title', isCollapsed ? 'Perluas sidebar' : 'Ciutkan sidebar');
+        });
+    }
+
+    const mobileDrawerToggle = document.getElementById('admin-drawer-toggle');
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && mobileDrawerToggle?.checked) {
+            mobileDrawerToggle.checked = false;
+        }
+    });
+
+    document.querySelectorAll('[data-admin-profile-dropdown]').forEach((dropdown) => {
+        document.addEventListener('click', (event) => {
+            if (!(event.target instanceof Node) || !dropdown.contains(event.target)) {
+                dropdown.open = false;
+            }
+        });
+
+        dropdown.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') {
+                dropdown.open = false;
+                dropdown.querySelector('summary')?.focus();
+            }
+        });
+    });
+
+    document.querySelectorAll('[data-setup-password-toggle]').forEach((button) => {
+        button.addEventListener('click', () => {
+            const input = document.getElementById(button.getAttribute('aria-controls'));
+
+            if (!(input instanceof HTMLInputElement)) {
+                return;
+            }
+
+            const shouldShowPassword = input.type === 'password';
+            input.type = shouldShowPassword ? 'text' : 'password';
+            button.setAttribute('aria-label', shouldShowPassword ? 'Sembunyikan password' : 'Tampilkan password');
+            button.querySelector('[data-password-eye]').hidden = shouldShowPassword;
+            button.querySelector('[data-password-eye-off]').hidden = !shouldShowPassword;
+        });
+    });
+
+    const setupPassword = document.querySelector('[data-setup-password]');
+    const passwordMeter = document.querySelector('[data-password-meter]');
+    const passwordMeterFill = document.querySelector('[data-password-meter-fill]');
+    const passwordStrengthLabel = document.querySelector('[data-password-strength-label]');
+
+    if (setupPassword && passwordMeter && passwordMeterFill && passwordStrengthLabel) {
+        setupPassword.addEventListener('input', () => {
+            const password = setupPassword.value;
+            const checks = [
+                password.length >= 8,
+                /[a-z]/.test(password),
+                /[A-Z]/.test(password),
+                /\d/.test(password),
+                /[^a-zA-Z0-9]/.test(password),
+            ];
+            const score = checks.filter(Boolean).length;
+            const strength = password.length === 0
+                ? 'empty'
+                : score <= 2
+                    ? 'weak'
+                    : score <= 4
+                        ? 'medium'
+                        : 'strong';
+            const labels = {
+                empty: 'Belum diisi',
+                weak: 'Lemah',
+                medium: 'Sedang',
+                strong: 'Kuat',
+            };
+
+            passwordMeter.dataset.strength = strength;
+            passwordMeter.setAttribute('aria-valuenow', String(score));
+            passwordMeterFill.style.width = `${score * 20}%`;
+            passwordStrengthLabel.textContent = labels[strength];
+        });
+    }
+
+    const setupForm = document.querySelector('[data-setup-form]');
+
+    if (setupForm) {
+        setupForm.addEventListener('submit', () => {
+            if (!setupForm.checkValidity()) {
+                return;
+            }
+
+            const submitButton = setupForm.querySelector('[data-setup-submit]');
+
+            if (!submitButton) {
+                return;
+            }
+
+            submitButton.disabled = true;
+            submitButton.setAttribute('aria-busy', 'true');
+            submitButton.querySelector('[data-submit-label]').textContent = 'Membuat akun...';
+            submitButton.querySelector('[data-submit-arrow]').hidden = true;
+            submitButton.querySelector('[data-submit-spinner]').hidden = false;
+        });
+    }
 
     document.querySelectorAll('[data-copy-article-link]').forEach((button) => {
         const status = document.querySelector('[data-copy-article-status]');
@@ -110,136 +259,151 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    const teacherCards = [...document.querySelectorAll('.teacher-card')];
+    const educatorCards = [...document.querySelectorAll('.teacher-card.educator-card')];
+    const focusableSelector = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+    const educatorCloseFallbacks = new WeakMap();
 
-    const syncTeacherScrollLock = () => {
-        const openModal = teacherCards.some((card) => card.classList.contains('is-open') && card.classList.contains('educator-card'));
-        document.body.classList.toggle('teacher-modal-open', openModal);
+    const updateEducatorModalState = () => {
+        document.body.classList.toggle(
+            'teacher-modal-open',
+            educatorCards.some((card) => (
+                card.classList.contains('is-open') || card.classList.contains('is-closing')
+            )),
+        );
     };
 
-    const setTeacherCardOpen = (activeCard, isOpen) => {
-        teacherCards.forEach((card) => {
-            const cardIsOpen = isOpen && card === activeCard;
-            const trigger = card.querySelector('.teacher-card-trigger');
-            const details = card.querySelector('.teacher-card-details');
+    const clearEducatorCloseFallback = (card) => {
+        const timer = educatorCloseFallbacks.get(card);
 
-            if (!trigger || !details) return;
-
-            card.classList.toggle('is-open', cardIsOpen);
-            trigger.setAttribute('aria-expanded', String(cardIsOpen));
-            details.setAttribute('aria-hidden', String(!cardIsOpen));
-            details.inert = !cardIsOpen;
-        });
-        syncTeacherScrollLock();
+        if (timer !== undefined) {
+            window.clearTimeout(timer);
+            educatorCloseFallbacks.delete(card);
+        }
     };
 
-    teacherCards.forEach((card) => {
-        const trigger = card.querySelector('.teacher-card-trigger');
-        const closeButton = card.querySelector('.teacher-card-close');
-        const isPrincipalCard = card.classList.contains('principal-card');
-        const isEducatorCard = card.classList.contains('educator-card');
-        const hoverTarget = isPrincipalCard
-            ? card.querySelector('.principal-portrait-frame')
-            : card;
-        let skipNextFocusOpen = false;
-
-        const closeOnPointerLeave = (event) => {
-            if (event.pointerType === 'mouse') {
-                setTeacherCardOpen(card, false);
-            }
-        };
-
-        if (!isEducatorCard) {
-            hoverTarget.addEventListener('pointerenter', (event) => {
-                if (event.pointerType === 'mouse') {
-                    setTeacherCardOpen(card, true);
-                }
-            });
-
-            card.addEventListener('pointerleave', closeOnPointerLeave);
-
-            if (isPrincipalCard) {
-                hoverTarget.addEventListener('pointerleave', closeOnPointerLeave);
-            }
-        }
-
-        card.addEventListener('focusin', (event) => {
-            if (!isEducatorCard && !skipNextFocusOpen && (!isPrincipalCard || event.target === trigger)) {
-                setTeacherCardOpen(card, true);
-            }
-        });
-
-        card.addEventListener('focusout', (event) => {
-            if (!isEducatorCard && (isPrincipalCard ? event.relatedTarget !== trigger : !card.contains(event.relatedTarget))) {
-                setTeacherCardOpen(card, false);
-            }
-        });
-
-        if (closeButton) {
-            closeButton.addEventListener('click', () => {
-                setTeacherCardOpen(card, false);
-                skipNextFocusOpen = true;
-                trigger.focus();
-                skipNextFocusOpen = false;
-            });
-        }
-
-        trigger.addEventListener('click', (event) => {
-            if (isEducatorCard) {
-                event.preventDefault();
-                const willOpen = trigger.getAttribute('aria-expanded') !== 'true';
-
-                setTeacherCardOpen(card, willOpen);
-
-                if (willOpen) {
-                    window.setTimeout(() => closeButton?.focus(), 0);
-                } else {
-                    trigger.focus();
-                }
-
-                return;
-            }
-            if (event.detail === 0 || event.pointerType === 'touch') {
-                setTeacherCardOpen(card, trigger.getAttribute('aria-expanded') !== 'true');
-            } else {
-                setTeacherCardOpen(card, true);
-            }
-        });
-
-        if (isEducatorCard) {
-            document.addEventListener('click', (event) => {
-                if (!(event.target instanceof Node) || !card.classList.contains('is-open')) return;
-                const panel = card.querySelector('.teacher-card-details');
-                if (!panel) return;
-                if (!panel.contains(event.target) && !trigger.contains(event.target)) {
-                    setTeacherCardOpen(card, false);
-                    trigger.focus();
-                }
-            });
-        }
-
-        card.addEventListener('keydown', (event) => {
-            if (event.key === 'Escape') {
-                setTeacherCardOpen(card, false);
-                skipNextFocusOpen = true;
-                trigger.focus();
-                skipNextFocusOpen = false;
-            }
-        });
-    });
-
-    document.addEventListener('keydown', (event) => {
-        if (event.key !== 'Escape') {
+    const finishEducatorDialogClose = (card) => {
+        if (!card.classList.contains('is-closing')) {
             return;
         }
 
-        const openEducatorCard = teacherCards.find((card) => (
-            card.classList.contains('educator-card') && card.classList.contains('is-open')
-        ));
+        clearEducatorCloseFallback(card);
+        card.classList.remove('is-closing');
+        updateEducatorModalState();
+    };
 
-        if (openEducatorCard) {
-            setTeacherCardOpen(openEducatorCard, false);
-            openEducatorCard.querySelector('.teacher-card-trigger')?.focus();
+    const setEducatorDialogOpen = (activeCard, isOpen) => {
+        educatorCards.forEach((card) => {
+            const isActive = isOpen && card === activeCard;
+            const isClosing = !isOpen
+                && card === activeCard
+                && card.classList.contains('is-open');
+            const trigger = card.querySelector('.teacher-card-trigger');
+            const dialog = card.querySelector('.teacher-card-details');
+
+            if (!trigger || !dialog) {
+                return;
+            }
+
+            clearEducatorCloseFallback(card);
+            card.classList.toggle('is-closing', isClosing);
+            card.classList.toggle('is-open', isActive);
+            trigger.setAttribute('aria-expanded', String(isActive));
+            dialog.setAttribute('aria-hidden', String(!isActive));
+            dialog.inert = !isActive;
+        });
+
+        updateEducatorModalState();
+
+        if (!isOpen && activeCard.classList.contains('is-closing')) {
+            const timer = window.setTimeout(() => finishEducatorDialogClose(activeCard), 350);
+            educatorCloseFallbacks.set(activeCard, timer);
+        }
+    };
+
+    document.addEventListener('transitionend', (event) => {
+        if (!(event.target instanceof Element)
+            || !event.target.matches('.staff-profile-dialog')
+            || event.propertyName !== 'opacity') {
+            return;
+        }
+
+        const card = event.target.closest('.teacher-card.educator-card.is-closing');
+
+        if (card) {
+            finishEducatorDialogClose(card);
+        }
+    });
+
+    document.addEventListener('click', (event) => {
+        if (!(event.target instanceof Element)) {
+            return;
+        }
+
+        const control = event.target.closest('.teacher-card-trigger, .teacher-card-close, .staff-id-backdrop');
+        const card = control?.closest('.teacher-card.educator-card');
+
+        if (!control || !card) {
+            return;
+        }
+
+        if (control.matches('.teacher-card-trigger')) {
+            const isOpen = control.getAttribute('aria-expanded') === 'true';
+            setEducatorDialogOpen(card, !isOpen);
+
+            if (isOpen) {
+                control.focus();
+            } else {
+                card.querySelector('.teacher-card-close')?.focus();
+            }
+
+            return;
+        }
+
+        setEducatorDialogOpen(card, false);
+        card.querySelector('.teacher-card-trigger')?.focus();
+    });
+
+    document.addEventListener('keydown', (event) => {
+        const openCard = educatorCards.find((card) => card.classList.contains('is-open'));
+
+        if (!openCard) {
+            return;
+        }
+
+        if (event.key === 'Escape') {
+            event.preventDefault();
+            setEducatorDialogOpen(openCard, false);
+            openCard.querySelector('.teacher-card-trigger')?.focus();
+
+            return;
+        }
+
+        if (event.key !== 'Tab') {
+            return;
+        }
+
+        const dialog = openCard.querySelector('.teacher-card-details');
+        const focusableElements = dialog
+            ? [...dialog.querySelectorAll(focusableSelector)].filter((element) => element.getClientRects().length > 0)
+            : [];
+
+        if (focusableElements.length === 0) {
+            return;
+        }
+
+        const firstElement = focusableElements[0];
+        const lastElement = focusableElements[focusableElements.length - 1];
+        const focusIsOutsideDialog = !dialog.contains(document.activeElement);
+
+        if (focusIsOutsideDialog) {
+            event.preventDefault();
+            (event.shiftKey ? lastElement : firstElement).focus();
+        } else if (event.shiftKey && document.activeElement === firstElement) {
+            event.preventDefault();
+            lastElement.focus();
+        } else if (!event.shiftKey && document.activeElement === lastElement) {
+            event.preventDefault();
+            firstElement.focus();
         }
     });
 

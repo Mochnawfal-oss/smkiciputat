@@ -17,7 +17,19 @@ class AdminRegistrationController extends Controller
     {
         $this->ensureRegistrationIsAvailable();
 
+        return view('admin.setup-welcome');
+    }
+
+    public function form(): View
+    {
+        $this->ensureRegistrationIsAvailable();
+
         return view('admin.register');
+    }
+
+    public function success(): View
+    {
+        return view('admin.register-success');
     }
 
     public function store(Request $request): RedirectResponse
@@ -55,7 +67,7 @@ class AdminRegistrationController extends Controller
         Auth::guard('admin')->login($admin);
         $request->session()->regenerate();
 
-        return redirect()->route('admin.dashboard')->with('success', 'Akun Superadmin pertama berhasil dibuat.');
+        return redirect()->route('admin.register.success')->with('success', 'Akun Superadmin pertama berhasil dibuat.');
     }
 
     private function ensureRegistrationIsAvailable(): void

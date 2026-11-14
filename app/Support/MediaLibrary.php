@@ -333,7 +333,11 @@ class MediaLibrary
             if (
                 Str::startsWith($path, ['http://', 'https://', '/'])
                 || ! Storage::disk('public')->exists($path)
-                || MediaAsset::query()->where('original_path', $path)->exists()
+                || MediaAsset::query()
+                    ->where('original_path', $path)
+                    ->orWhere('optimized_path', $path)
+                    ->orWhere('poster_path', $path)
+                    ->exists()
             ) {
                 continue;
             }

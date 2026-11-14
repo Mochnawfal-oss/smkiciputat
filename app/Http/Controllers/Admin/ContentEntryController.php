@@ -60,7 +60,7 @@ class ContentEntryController extends Controller
     public function create(string $type): View
     {
         $typeConfig = $this->typeConfig($type);
-        $defaultStatus = $typeConfig['type'] === 'teacher' ? 'published' : 'draft';
+        $defaultStatus = in_array($typeConfig['type'], ['teacher', 'program'], true) ? 'published' : 'draft';
         $model = ContentRecord::modelForType($typeConfig['type']);
 
         return view('admin.content.form', [
@@ -74,7 +74,9 @@ class ContentEntryController extends Controller
     {
         $typeConfig = $this->typeConfig($type);
 
-        if ($typeConfig['type'] === 'principal_welcome') {
+        if ($typeConfig['type'] === 'program') {
+            $this->prepareProgramInput($request);
+        } elseif ($typeConfig['type'] === 'principal_welcome') {
             $title = $request->input('title');
             $request->merge([
                 'slug' => $this->uniquePrincipalWelcomeSlug(is_string($title) ? $title : ''),
@@ -94,7 +96,10 @@ class ContentEntryController extends Controller
             ]);
         }
 
-        $validated = $request->validate($this->rules($request, $typeConfig));
+        $validated = $request->validate(
+            $this->rules($request, $typeConfig),
+            $this->validationMessages($typeConfig),
+        );
         $attributes = $this->attributes($validated, $typeConfig);
 
         if ($typeConfig['type'] === 'principal_welcome') {
@@ -150,7 +155,9 @@ class ContentEntryController extends Controller
         $typeConfig = $this->typeConfig($type);
         $entry = $this->resolveEntry($typeConfig, $entry);
 
-        if ($typeConfig['type'] === 'principal_welcome') {
+        if ($typeConfig['type'] === 'program') {
+            $this->prepareProgramInput($request, $entry);
+        } elseif ($typeConfig['type'] === 'principal_welcome') {
             $title = $request->input('title');
             $request->merge([
                 'slug' => $this->uniquePrincipalWelcomeSlug(
@@ -173,10 +180,18 @@ class ContentEntryController extends Controller
             ]);
         }
 
-        $validated = $request->validate($this->rules($request, $typeConfig, $entry));
+        $validated = $request->validate(
+            $this->rules($request, $typeConfig, $entry),
+            $this->validationMessages($typeConfig),
+        );
         $attributes = $this->attributes($validated, $typeConfig);
 
-        if ($typeConfig['type'] === 'principal_welcome') {
+        if ($typeConfig['type'] === 'program') {
+            $attributes['metadata'] = array_replace(
+                $entry->metadata ?? [],
+                $attributes['metadata'] ?? [],
+            );
+        } elseif ($typeConfig['type'] === 'principal_welcome') {
             $attributes['published_at'] = $entry->published_at
                 ?? ($attributes['status'] === 'published' ? now() : null);
             $attributes['sort_order'] = $entry->sort_order;
@@ -332,10 +347,11 @@ class ContentEntryController extends Controller
             $slugRule->ignore($entry->id);
         }
 
+        $summaryMaximum = $typeValue === 'program' ? 80 : 600;
         $rules = [
             'title' => ['required', 'string', 'max:180'],
             'slug' => ['required', 'string', 'max:180', 'regex:/^[a-z0-9]+(?:-[a-z0-9]+)*$/', $slugRule],
-            'summary' => ['nullable', 'string', 'max:600'],
+            'summary' => ['nullable', 'string', 'max:'.$summaryMaximum],
             'body' => ['nullable', 'string', 'max:50000'],
             'category' => ['nullable', 'string', 'max:100'],
             'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp,avif', 'extensions:jpg,jpeg,png,webp,avif', 'max:'.(config('media.max_upload_mb') * 1024)],
@@ -353,6 +369,10 @@ class ContentEntryController extends Controller
             'meta_title' => ['nullable', 'string', 'max:180'],
             'meta_description' => ['nullable', 'string', 'max:320'],
         ];
+
+        if ($typeValue === 'program') {
+            $rules['metadata'] = ['required', 'array'];
+        }
 
         foreach ($typeConfig['fields'] as $name => $field) {
             $fieldRule = $field['required'] ? ['required'] : ['nullable'];
@@ -381,6 +401,17 @@ class ContentEntryController extends Controller
         }
 
         return $rules;
+    }
+
+    /**
+     * @param  array<string, mixed>  $typeConfig
+     * @return array<string, string>
+     */
+    private function validationMessages(array $typeConfig): array
+    {
+        return $typeConfig['type'] === 'program'
+            ? ['summary.max' => 'Ringkasan beranda maksimal 80 karakter.']
+            : [];
     }
 
     /**
@@ -421,6 +452,127 @@ class ContentEntryController extends Controller
         }
 
         return $attributes;
+    }
+
+    private function prepareProgramInput(Request $request, ?ContentRecord $entry = null): void
+    {
+        $title = $request->input('title');
+        $programTitle = is_string($title) ? $title : '';
+        $slugInput = $request->input('slug');
+
+        if (is_string($slugInput) && filled($slugInput)) {
+            $slug = Str::slug($slugInput);
+        } elseif ($entry !== null && $entry->title === $programTitle) {
+            $slug = $entry->slug;
+        } else {
+            $slug = $this->uniqueProgramValue($programTitle, $entry, 'slug');
+        }
+
+        $submittedMetadata = $request->input('metadata', []);
+        $merge = [
+            'slug' => $slug,
+            'category' => $request->exists('category')
+                ? $request->input('category')
+                : ($entry?->category ?: 'Program Keahlian'),
+            'status' => $request->exists('status')
+                ? $request->input('status')
+                : ($entry?->status ?? 'published'),
+            'featured' => $request->exists('featured')
+                ? $request->input('featured')
+                : ($entry?->featured ?? false),
+            'sort_order' => $request->exists('sort_order')
+                ? $request->input('sort_order')
+                : ($entry?->sort_order ?? $this->nextProgramSortOrder()),
+            'published_at' => $request->exists('published_at')
+                ? $request->input('published_at')
+                : $entry?->published_at?->format('Y-m-d\TH:i'),
+        ];
+
+        if (is_array($submittedMetadata)) {
+            $existingMetadata = $entry?->metadata ?? [];
+            $metadata = array_replace($existingMetadata, $submittedMetadata);
+
+            if (! array_key_exists('abbreviation', $submittedMetadata)
+                || ($metadata['abbreviation'] ?? null) === null
+                || (is_string($metadata['abbreviation'] ?? null) && blank($metadata['abbreviation']))) {
+                $metadata['abbreviation'] = filled($existingMetadata['abbreviation'] ?? null)
+                    ? $existingMetadata['abbreviation']
+                    : $this->programAbbreviation($programTitle);
+            }
+
+            $routeKey = array_key_exists('route_key', $submittedMetadata)
+                ? $submittedMetadata['route_key']
+                : ($entry?->route_key ?? $metadata['route_key'] ?? null);
+            if (is_string($routeKey) && filled($routeKey)) {
+                $metadata['route_key'] = Str::slug($routeKey);
+            } elseif (
+                ! array_key_exists('route_key', $submittedMetadata)
+                || $routeKey === null
+                || (is_string($routeKey) && blank($routeKey))
+            ) {
+                $metadata['route_key'] = $entry?->route_key
+                    ?: $this->uniqueProgramValue($programTitle, $entry, 'route_key');
+            }
+
+            if (! array_key_exists('icon', $submittedMetadata)
+                || ($metadata['icon'] ?? null) === null
+                || (is_string($metadata['icon'] ?? null) && blank($metadata['icon']))) {
+                $metadata['icon'] = filled($existingMetadata['icon'] ?? null)
+                    ? $existingMetadata['icon']
+                    : 'graduation-cap';
+            }
+
+            $merge['metadata'] = $metadata;
+        }
+
+        $request->merge($merge);
+    }
+
+    private function uniqueProgramValue(string $title, ?ContentRecord $entry, string $column): string
+    {
+        $baseValue = Str::slug($title) ?: 'program-keahlian';
+        $baseValue = rtrim(substr($baseValue, 0, 160), '-');
+        $suffix = 1;
+
+        do {
+            $candidate = $suffix === 1 ? $baseValue : $baseValue.'-'.$suffix;
+            $query = Program::query()->where($column, $candidate);
+
+            if ($entry !== null) {
+                $query->where('id', '<>', $entry->id);
+            }
+
+            if (! $query->exists()) {
+                return $candidate;
+            }
+
+            $suffix++;
+        } while (true);
+    }
+
+    private function nextProgramSortOrder(): int
+    {
+        $highestSortOrder = Program::query()->max('sort_order');
+
+        return $highestSortOrder === null ? 0 : (int) $highestSortOrder + 1;
+    }
+
+    private function programAbbreviation(string $title): string
+    {
+        $words = preg_split('/[^\p{L}\p{N}]+/u', trim($title), -1, PREG_SPLIT_NO_EMPTY) ?: [];
+        $words = array_values(array_filter(
+            $words,
+            fn (string $word): bool => ! in_array(Str::lower($word), ['dan', 'and'], true),
+        ));
+
+        if (count($words) > 1) {
+            return Str::upper(implode('', array_map(
+                fn (string $word): string => mb_substr($word, 0, 1),
+                $words,
+            )));
+        }
+
+        return Str::upper(mb_substr($words[0] ?? 'PK', 0, 2));
     }
 
     /**

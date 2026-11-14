@@ -40,11 +40,13 @@ Route::prefix('adminsmkiciputat')->name('admin.')->group(function (): void {
     Route::post('/', [AdminLoginController::class, 'store'])->middleware('throttle:admin-login')->name('login.submit');
     Route::middleware('throttle:5,1')->group(function (): void {
         Route::get('/register', [AdminRegistrationController::class, 'create'])->name('register');
+        Route::get('/register/form', [AdminRegistrationController::class, 'form'])->name('register.form');
         Route::post('/register', [AdminRegistrationController::class, 'store'])->name('register.store');
     });
 
     Route::middleware('auth:admin')->group(function (): void {
         Route::post('/logout', [AdminLoginController::class, 'destroy'])->name('logout');
+        Route::get('/register/success', [AdminRegistrationController::class, 'success'])->name('register.success');
         Route::get('/dashboard', DashboardController::class)->name('dashboard');
         Route::middleware('admin.role:superadmin,admin')->group(function (): void {
             Route::get('/media', [MediaManagerController::class, 'index'])->name('media.index');

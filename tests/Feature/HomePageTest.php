@@ -80,6 +80,64 @@ class HomePageTest extends TestCase
         $response->assertDontSee('Tenaga Nonaktif');
     }
 
+    public function test_homepage_hides_placeholder_profile_values_from_teacher_modal(): void
+    {
+        $placeholderTeacher = Teacher::query()->create([
+            'name' => 'DATA CONTOH 03',
+            'slug' => 'data-contoh-03',
+            'position' => 'Jabatan Contoh 03',
+            'category' => 'DATA CONTOH kategori',
+            'summary' => 'DATA CONTOH - Ganti dengan deskripsi profil yang sebenarnya.',
+            'education' => 'Jabatan Contoh pendidikan',
+            'status' => 'published',
+            'sort_order' => 1,
+        ]);
+        $actualTeacher = Teacher::query()->create([
+            'name' => 'Guru Nyata',
+            'slug' => 'guru-nyata',
+            'position' => 'Guru Matematika',
+            'category' => 'Guru',
+            'summary' => 'Mengajar sejak 2015.',
+            'education' => 'S1 Pendidikan Matematika',
+            'status' => 'published',
+            'sort_order' => 2,
+        ]);
+
+        $response = $this->get(route('home'));
+
+        $response->assertOk();
+        $content = $response->getContent() ?? '';
+        $profileMarkupFor = static function (string $content, Teacher $teacher): string {
+            $start = strpos($content, 'id="teacher-profile-'.$teacher->getKey().'"');
+
+            if ($start === false) {
+                return '';
+            }
+
+            $end = strpos($content, '</article>', $start);
+
+            if ($end === false) {
+                return '';
+            }
+
+            return substr($content, $start, $end - $start);
+        };
+        $placeholderModal = $profileMarkupFor($content, $placeholderTeacher);
+        $actualModal = $profileMarkupFor($content, $actualTeacher);
+
+        $this->assertSame(true, str_contains(
+            $placeholderModal,
+            '<h2 id="teacher-profile-'.$placeholderTeacher->getKey().'-name">Profil Pendidik</h2>',
+        ));
+        $this->assertSame(false, str_contains($placeholderModal, 'DATA CONTOH'));
+        $this->assertSame(false, str_contains($placeholderModal, 'Jabatan Contoh'));
+        $this->assertSame(true, str_contains($actualModal, 'Guru Nyata'));
+        $this->assertSame(true, str_contains($actualModal, 'Guru Matematika'));
+        $this->assertSame(true, str_contains($actualModal, 'Guru'));
+        $this->assertSame(true, str_contains($actualModal, 'Mengajar sejak 2015.'));
+        $this->assertSame(true, str_contains($actualModal, 'S1 Pendidikan Matematika'));
+    }
+
     public function test_homepage_renders_published_news_without_a_homepage_group(): void
     {
         $this->freezeTime();

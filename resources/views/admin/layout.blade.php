@@ -10,44 +10,83 @@
 <body class="admin-body">
     <input class="admin-drawer-toggle" type="checkbox" id="admin-drawer-toggle" aria-label="Buka navigasi admin">
 
-    <aside class="admin-sidebar">
-        <a href="{{ route('admin.dashboard') }}" class="admin-brand">
+    <aside class="admin-sidebar" id="admin-sidebar">
+        <a href="{{ route('admin.dashboard') }}" class="admin-brand" title="SMK Islamiyah Ciputat">
             <img src="{{ asset('images/logo/logo.PNG') }}" alt="" class="admin-brand-logo">
-            <span>
+            <span class="admin-brand-copy">
                 <strong>SMK Islamiyah</strong>
                 <small>Content Management</small>
             </span>
         </a>
 
         <nav class="admin-navigation" aria-label="Navigasi admin">
-            <a href="{{ route('admin.dashboard') }}" class="admin-nav-link {{ request()->routeIs('admin.dashboard') ? 'is-active' : '' }}">
-                <span aria-hidden="true">⌂</span> Dashboard
+            <a href="{{ route('admin.dashboard') }}" title="Dashboard" class="admin-nav-link {{ request()->routeIs('admin.dashboard') ? 'is-active' : '' }}">
+                <i class="admin-nav-icon" data-lucide="layout-dashboard" aria-hidden="true"></i>
+                <span class="admin-nav-label">Dashboard</span>
             </a>
+
             <p class="admin-nav-caption">Konten Website</p>
-            <a href="{{ route('admin.content.index', 'programs') }}" class="admin-nav-link {{ request()->route('type') === 'programs' ? 'is-active' : '' }}"><span aria-hidden="true">▦</span> Program Keahlian</a>
-            <a href="{{ route('admin.teachers.index') }}" class="admin-nav-link {{ request()->routeIs('admin.teachers.*') ? 'is-active' : '' }}"><span aria-hidden="true">♙</span> Tenaga Kependidikan</a>
-            <a href="{{ route('admin.content.index', 'principal-welcomes') }}" class="admin-nav-link {{ request()->route('type') === 'principal-welcomes' ? 'is-active' : '' }}"><span aria-hidden="true">▤</span> Sambutan Kepala Sekolah</a>
-            <a href="{{ route('admin.content.index', 'news') }}" class="admin-nav-link {{ request()->route('type') === 'news' ? 'is-active' : '' }}"><span aria-hidden="true">▤</span> Berita</a>
-            <a href="{{ route('admin.content.index', 'jobs') }}" class="admin-nav-link {{ request()->route('type') === 'jobs' ? 'is-active' : '' }}"><span aria-hidden="true">▣</span> Lowongan BKK</a>
-            <a href="{{ route('admin.content.index', 'gallery') }}" class="admin-nav-link {{ request()->route('type') === 'gallery' ? 'is-active' : '' }}"><span aria-hidden="true">▧</span> Galeri</a>
+            <a href="{{ route('admin.content.index', 'programs') }}" title="Program Keahlian" class="admin-nav-link {{ request()->route('type') === 'programs' ? 'is-active' : '' }}">
+                <i class="admin-nav-icon" data-lucide="book-open" aria-hidden="true"></i>
+                <span class="admin-nav-label">Program Keahlian</span>
+            </a>
+            <a href="{{ route('admin.teachers.index') }}" title="Tenaga Kependidikan" class="admin-nav-link {{ request()->routeIs('admin.teachers.*') ? 'is-active' : '' }}">
+                <i class="admin-nav-icon" data-lucide="graduation-cap" aria-hidden="true"></i>
+                <span class="admin-nav-label">Tenaga Kependidikan</span>
+            </a>
+            <a href="{{ route('admin.content.index', 'principal-welcomes') }}" title="Sambutan Kepala Sekolah" class="admin-nav-link {{ request()->route('type') === 'principal-welcomes' ? 'is-active' : '' }}">
+                <i class="admin-nav-icon" data-lucide="user-round" aria-hidden="true"></i>
+                <span class="admin-nav-label">Sambutan Kepala Sekolah</span>
+            </a>
+            <a href="{{ route('admin.content.index', 'news') }}" title="Berita" class="admin-nav-link {{ request()->route('type') === 'news' ? 'is-active' : '' }}">
+                <i class="admin-nav-icon" data-lucide="newspaper" aria-hidden="true"></i>
+                <span class="admin-nav-label">Berita</span>
+            </a>
+            <a href="{{ route('admin.content.index', 'jobs') }}" title="Lowongan BKK" class="admin-nav-link {{ request()->route('type') === 'jobs' ? 'is-active' : '' }}">
+                <i class="admin-nav-icon" data-lucide="briefcase-business" aria-hidden="true"></i>
+                <span class="admin-nav-label">Lowongan BKK</span>
+            </a>
+            <a href="{{ route('admin.content.index', 'gallery') }}" title="Galeri" class="admin-nav-link {{ request()->route('type') === 'gallery' ? 'is-active' : '' }}">
+                <i class="admin-nav-icon" data-lucide="images" aria-hidden="true"></i>
+                <span class="admin-nav-label">Galeri</span>
+            </a>
+
             @if (! auth('admin')->user()?->isEditor())
                 <p class="admin-nav-caption">Pengelolaan</p>
-                <a href="{{ route('admin.media.index') }}" class="admin-nav-link {{ request()->routeIs('admin.media.*') ? 'is-active' : '' }}"><span aria-hidden="true">▣</span> Media Manager</a>
-                <a href="{{ route('admin.settings.index') }}" class="admin-nav-link {{ request()->routeIs('admin.settings.*') ? 'is-active' : '' }}"><span aria-hidden="true">⚙</span> Pengaturan Website</a>
+                <a href="{{ route('admin.media.index') }}" title="Media Manager" class="admin-nav-link {{ request()->routeIs('admin.media.*') ? 'is-active' : '' }}">
+                    <i class="admin-nav-icon" data-lucide="hard-drive" aria-hidden="true"></i>
+                    <span class="admin-nav-label">Media Manager</span>
+                </a>
+                <a href="{{ route('admin.settings.index') }}" title="Pengaturan Website" class="admin-nav-link {{ request()->routeIs('admin.settings.*') ? 'is-active' : '' }}">
+                    <i class="admin-nav-icon" data-lucide="settings-2" aria-hidden="true"></i>
+                    <span class="admin-nav-label">Pengaturan Website</span>
+                </a>
             @endif
             @if (auth('admin')->user()?->isSuperAdmin())
-                <a href="{{ route('admin.admins.index') }}" class="admin-nav-link {{ request()->routeIs('admin.admins.*') ? 'is-active' : '' }}"><span aria-hidden="true">♧</span> Manajemen Admin</a>
+                <a href="{{ route('admin.admins.index') }}" title="Manajemen Admin" class="admin-nav-link {{ request()->routeIs('admin.admins.*') ? 'is-active' : '' }}">
+                    <i class="admin-nav-icon" data-lucide="users-round" aria-hidden="true"></i>
+                    <span class="admin-nav-label">Manajemen Admin</span>
+                </a>
             @elseif (! auth('admin')->user()?->isEditor())
-                <a href="{{ route('admin.admins.edit', auth('admin')->user()) }}" class="admin-nav-link {{ request()->routeIs('admin.admins.*') ? 'is-active' : '' }}"><span aria-hidden="true">♧</span> Profil Saya</a>
+                <a href="{{ route('admin.admins.edit', auth('admin')->user()) }}" title="Profil Saya" class="admin-nav-link {{ request()->routeIs('admin.admins.*') ? 'is-active' : '' }}">
+                    <i class="admin-nav-icon" data-lucide="circle-user-round" aria-hidden="true"></i>
+                    <span class="admin-nav-label">Profil Saya</span>
+                </a>
             @endif
         </nav>
 
         <div class="admin-sidebar-bottom">
-            <a class="admin-website-link" href="{{ route('home') }}" target="_blank" rel="noopener">Lihat website <span aria-hidden="true">↗</span></a>
-            <form method="POST" action="{{ route('admin.logout') }}">
-                @csrf
-                <button class="admin-logout" type="submit"><span aria-hidden="true">↪</span> Keluar</button>
-            </form>
+            <div class="admin-sidebar-profile">
+                <span class="admin-avatar">{{ mb_substr(auth('admin')->user()->name, 0, 1) }}</span>
+                <span class="admin-sidebar-profile-copy">
+                    <strong>{{ auth('admin')->user()->name }}</strong>
+                    <small>{{ auth('admin')->user()->roleLabel() }}</small>
+                </span>
+            </div>
+            <a class="admin-website-link" href="{{ route('home') }}" target="_blank" rel="noopener" title="Lihat website">
+                <i data-lucide="external-link" aria-hidden="true"></i>
+                <span class="admin-nav-label">Lihat website</span>
+            </a>
         </div>
     </aside>
 
@@ -56,19 +95,47 @@
     <main class="admin-main">
         <header class="admin-topbar">
             <div class="admin-topbar-title">
-                <label class="admin-menu-button" for="admin-drawer-toggle" aria-label="Buka menu">☰</label>
-                <div>
+                <label class="admin-menu-button" for="admin-drawer-toggle" aria-label="Buka menu">
+                    <i data-lucide="menu" aria-hidden="true"></i>
+                </label>
+                <button class="admin-collapse-button" type="button" aria-label="Ciutkan sidebar" aria-expanded="true" aria-controls="admin-sidebar" title="Ciutkan sidebar" data-admin-sidebar-toggle>
+                    <span data-sidebar-collapse-icon><i data-lucide="panel-left-close" aria-hidden="true"></i></span>
+                    <span data-sidebar-expand-icon hidden><i data-lucide="panel-left-open" aria-hidden="true"></i></span>
+                </button>
+                <div class="admin-topbar-heading">
                     <p>Admin Panel <span>/</span> @yield('breadcrumb', 'Dashboard')</p>
                     <h1>@yield('page-title', 'Dashboard')</h1>
                 </div>
             </div>
-            <div class="admin-account">
-                <span class="admin-avatar">{{ mb_substr(auth('admin')->user()->name, 0, 1) }}</span>
-                <span>
-                    <strong>{{ auth('admin')->user()->name }}</strong>
-                    <small>{{ auth('admin')->user()->roleLabel() }} ({{ auth('admin')->user()->username }})</small>
-                </span>
+
+            <div class="admin-topbar-date">
+                <i data-lucide="calendar-days" aria-hidden="true"></i>
+                <span>{{ now()->locale('id')->translatedFormat('l, d F Y') }}</span>
             </div>
+
+            <details class="admin-profile-dropdown" data-admin-profile-dropdown>
+                <summary class="admin-profile-trigger">
+                    <span class="admin-avatar">{{ mb_substr(auth('admin')->user()->name, 0, 1) }}</span>
+                    <span class="admin-profile-trigger-copy">
+                        <strong>{{ auth('admin')->user()->name }}</strong>
+                        <small>{{ auth('admin')->user()->roleLabel() }}</small>
+                    </span>
+                    <i data-lucide="chevron-down" aria-hidden="true"></i>
+                </summary>
+                <div class="admin-profile-menu">
+                    <div class="admin-profile-menu-heading">
+                        <strong>{{ auth('admin')->user()->name }}</strong>
+                        <span>{{ auth('admin')->user()->username }}</span>
+                    </div>
+                    <form method="POST" action="{{ route('admin.logout') }}">
+                        @csrf
+                        <button class="admin-profile-logout" type="submit">
+                            <i data-lucide="log-out" aria-hidden="true"></i>
+                            Keluar dari panel
+                        </button>
+                    </form>
+                </div>
+            </details>
         </header>
 
         <div class="admin-content">

@@ -20,7 +20,15 @@
         <div class="admin-form-heading">
             <div>
                 <h2>{{ $isEditing ? 'Perbarui informasi konten' : 'Informasi konten baru' }}</h2>
-                <p>{{ $typeConfig['type'] === 'teacher' ? 'Lengkapi informasi tenaga pendidik. Data dengan status Published akan langsung tampil di website.' : 'Lengkapi informasi berikut. Gunakan status Published agar konten terlihat di website.' }}</p>
+                <p>
+                    @if ($typeConfig['type'] === 'teacher')
+                        Lengkapi informasi tenaga pendidik. Data dengan status Published akan langsung tampil di website.
+                    @elseif ($typeConfig['type'] === 'program')
+                        Isi nama bidang, ringkasan beranda, foto program, deskripsi detail, kompetensi, fasilitas, dan peluang karier.
+                    @else
+                        Lengkapi informasi berikut. Gunakan status Published agar konten terlihat di website.
+                    @endif
+                </p>
             </div>
         </div>
 
@@ -82,8 +90,77 @@
                     @error('sort_order')<small class="admin-field-error">{{ $message }}</small>@enderror
                 </div>
             </div>
+        @elseif ($typeConfig['type'] === 'program')
+            <div class="admin-form-grid">
+                <div class="admin-field admin-field-full">
+                    <label for="title">{{ $typeConfig['title_label'] }} <span>*</span></label>
+                    <input id="title" name="title" type="text" value="{{ old('title', $entry->title) }}" maxlength="180" required>
+                    @error('title')<small class="admin-field-error">{{ $message }}</small>@enderror
+                </div>
+
+                @include('admin.media._upload-field', [
+                    'id' => 'image',
+                    'inputName' => 'image',
+                    'sourceName' => 'source_image',
+                    'assetInputName' => 'media_asset_id',
+                    'category' => 'program',
+                    'existingPath' => $entry->image_path,
+                    'label' => 'Foto Program Keahlian',
+                    'errorKey' => 'image',
+                ])
+
+                <div class="admin-field admin-field-full">
+                    <label for="summary">{{ $typeConfig['summary_label'] }}</label>
+                    <textarea id="summary" name="summary" rows="3" maxlength="80">{{ old('summary', $entry->summary) }}</textarea>
+                    <small>Maksimal 80 karakter. Teks singkat ini hanya ditampilkan pada kartu program di beranda.</small>
+                    @error('summary')<small class="admin-field-error">{{ $message }}</small>@enderror
+                </div>
+
+                <div class="admin-field admin-field-full admin-form-section-title">
+                    <h3>Konten Halaman Detail</h3>
+                    <small>Isi deskripsi panjang untuk bagian Tentang Program di halaman detail. Ringkasan di atas hanya tampil pada kartu program di beranda.</small>
+                </div>
+
+                <div class="admin-field admin-field-full">
+                    <label for="body">{{ $typeConfig['body_label'] }}</label>
+                    <textarea id="body" name="body" rows="10" maxlength="50000">{{ old('body', $entry->body) }}</textarea>
+                    <small>Foto utama yang sama digunakan di beranda dan hero halaman detail. Foto bagian Tentang Program dikelola melalui Galeri yang dikaitkan ke program.</small>
+                    @error('body')<small class="admin-field-error">{{ $message }}</small>@enderror
+                </div>
+
+                <div class="admin-field admin-field-full admin-form-section-title">
+                    <h3>Informasi Program</h3>
+                    <small>Data berikut mengisi kartu informasi dan daftar kompetensi serta fasilitas pada halaman detail.</small>
+                </div>
+
+                <div class="admin-field">
+                    <label for="metadata-primary-competence">{{ $typeConfig['fields']['primary_competence']['label'] }}</label>
+                    <input id="metadata-primary-competence" name="metadata[primary_competence]" type="text" value="{{ old('metadata.primary_competence', data_get($entry->metadata, 'primary_competence')) }}" maxlength="255">
+                    @error('metadata.primary_competence')<small class="admin-field-error">{{ $message }}</small>@enderror
+                </div>
+
+                <div class="admin-field">
+                    <label for="metadata-career-opportunities">{{ $typeConfig['fields']['career_opportunities']['label'] }}</label>
+                    <input id="metadata-career-opportunities" name="metadata[career_opportunities]" type="text" value="{{ old('metadata.career_opportunities', data_get($entry->metadata, 'career_opportunities')) }}" maxlength="255">
+                    @error('metadata.career_opportunities')<small class="admin-field-error">{{ $message }}</small>@enderror
+                </div>
+
+                <div class="admin-field admin-field-full">
+                    <label for="metadata-facilities">{{ $typeConfig['fields']['facilities']['label'] }}</label>
+                    <textarea id="metadata-facilities" name="metadata[facilities]" rows="4" maxlength="10000">{{ old('metadata.facilities', data_get($entry->metadata, 'facilities')) }}</textarea>
+                    <small>Tulis satu fasilitas per baris. Data ini tampil pada kartu Fasilitas Pendukung dan daftar di bagian Tentang Program.</small>
+                    @error('metadata.facilities')<small class="admin-field-error">{{ $message }}</small>@enderror
+                </div>
+
+                <div class="admin-field admin-field-full">
+                    <label for="metadata-advantages">{{ $typeConfig['fields']['advantages']['label'] }}</label>
+                    <textarea id="metadata-advantages" name="metadata[advantages]" rows="4" maxlength="10000">{{ old('metadata.advantages', data_get($entry->metadata, 'advantages')) }}</textarea>
+                    <small>Tulis satu kompetensi per baris. Kompetensi pertama juga tampil pada kartu informasi.</small>
+                    @error('metadata.advantages')<small class="admin-field-error">{{ $message }}</small>@enderror
+                </div>
+            </div>
         @else
-            {{-- Form Konten Standar (Program, Berita, Lowongan, Galeri) --}}
+            {{-- Form Konten Standar (Berita, Lowongan, Galeri) --}}
             <div class="admin-form-grid">
                 <div class="admin-field admin-field-full">
                     <label for="title">{{ $typeConfig['title_label'] ?? 'Judul / nama' }} <span>*</span></label>

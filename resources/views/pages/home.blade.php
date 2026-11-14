@@ -127,7 +127,7 @@
                                 <div class="program-card-details">
                                     <span class="program-code">{{ data_get($program->metadata, 'abbreviation', $program->title) }}</span>
                                     <h3>{{ $program->title }}</h3>
-                                    <p>{{ $program->summary }}</p>
+                                    <p>{{ \Illuminate\Support\Str::limit($program->summary ?? '', 80) }}</p>
                                     <a href="{{ route('program.show', $program->slug) }}">Pelajari program <span aria-hidden="true">↗</span></a>
                                 </div>
                             </div>
